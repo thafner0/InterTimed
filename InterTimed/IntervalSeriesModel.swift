@@ -25,6 +25,7 @@ class IntervalSeriesModel {
     
     func endIntervalSeries() throws {
         try endTravelInterval()
+        startOfIntervalInProgress = nil
     }
     
     func endTravelInterval(skippingDwellTime: Bool) throws {
@@ -61,7 +62,7 @@ class IntervalSeriesModel {
         intervals.append(Interval(departureTime: start, arrivalTime: end))
     }
     
-    enum UnsupportedOperationError: Error {
+    enum UnsupportedOperationError: Error, Equatable {
         case cannotStartSeriesWithData
         case cannotEndIntervalWhenNotRunning
         case noDwellInterval
