@@ -2,81 +2,123 @@
 //  IntervalSeriesModel.swift
 //  InterTimed
 //
-//  Created by Trevor Hafner on 13/06/2025.
+//  Created by Trevor Hafner on 6/15/25.
 //
 
 import Foundation
 
 class IntervalSeriesModel {
-    var timepoints: [TimingPoint] = []
-    var intervals: [Interval] = []
-    var startOfIntervalInProgress: IntervalType?
-    private var nextTimepoint = 1
+    var timepoints: [Timepoint] = []
+    var interval: [Interval] {
+        []
+    }
+    fileprivate(set) var state: any IntervalState = Ready()
     
-    func startIntervalSeries() throws {
-        guard timepoints.isEmpty && intervals.isEmpty else {
-            throw UnsupportedOperationError.cannotStartSeriesWithData
-        }
-        
-        startTravelInterval()
-        timepoints.append(TimingPoint(name: "Location 2"))
-        nextTimepoint += 1
+    func departForNextTimepoint() throws {
+        try state.depart(model: self)
     }
     
-    func endIntervalSeries() throws {
-        try endTravelInterval()
-        startOfIntervalInProgress = nil
+    func arriveAtStop() throws {
+        try state.arriveAtStop(model: self)
     }
     
-    func endTravelInterval(skippingDwellTime: Bool) throws {
-        try endTravelInterval()
-        if skippingDwellTime {
-            startTravelInterval()
-        } else {
-            startOfIntervalInProgress = .dwell(start: Date())
-        }
+    func endSeriesReset() throws {
+        try state.endSeriesReset(model: self)
     }
     
-    func endDwellInterval() throws {
-        guard case .dwell(_) = startOfIntervalInProgress else {
-            throw UnsupportedOperationError.noDwellInterval
-        }
-        startTravelInterval(endingDwell: true)
+    nonisolated enum ModelError: Error, Equatable {
+        case invalidStateTransition(reason: String)
     }
-    
-    private func startTravelInterval(endingDwell: Bool = false) {
+}
+
+protocol IntervalState: Equatable {
+    func depart(model: IntervalSeriesModel) throws
+    func arriveAtStop(model: IntervalSeriesModel) throws
+    func endSeriesReset(model: IntervalSeriesModel) throws
+}
+
+struct Ready: IntervalState {
+    func depart(model: IntervalSeriesModel) {
         let start = Date()
-        if endingDwell {
-            timepoints[timepoints.index(before: timepoints.endIndex)].dwellDuration = Duration.seconds(intervals.last!.arrivalTime.distance(to: start))
-        }
-        startOfIntervalInProgress = .travel(start: start)
-        timepoints.append(TimingPoint(name: "Location \(nextTimepoint)"))
-        nextTimepoint += 1
+        let origin = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: start))
+        model.timepoints.append(origin)
+        model.state = TimingTravel()
     }
     
-    private func endTravelInterval() throws {
-        let end = Date()
-        guard case .travel(let start) = startOfIntervalInProgress else {
-            throw UnsupportedOperationError.cannotEndIntervalWhenNotRunning
-        }
-        intervals.append(Interval(departureTime: start, arrivalTime: end))
+    func arriveAtStop(model: IntervalSeriesModel) {
+        let start = Date()
+        model.state = TimingDwell(arrivalTime: start)
     }
     
-    enum UnsupportedOperationError: Error, Equatable {
-        case cannotStartSeriesWithData
-        case cannotEndIntervalWhenNotRunning
-        case noDwellInterval
+    func endSeriesReset(model: IntervalSeriesModel) throws {
+        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")
     }
-    
-    enum IntervalType: Equatable {
-        case travel(start: Date)
-        case dwell(start: Date)
+}
+
+struct TimingTravel: IntervalState {
+    func depart(model: IntervalSeriesModel) {
+        let departureTime = Date()
         
-        var start: Date {
-            switch self {
-            case .travel(start: let start), .dwell(start: let start):
-                return start
-            }
-        }
+        let next = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: departureTime))
+        model.timepoints.append(next)
+        model.state = TimingTravel()
+    }
+    
+    func arriveAtStop(model: IntervalSeriesModel) {
+        let arrivalTime = Date()
+        
+        model.state = TimingDwell(arrivalTime: arrivalTime)
+    }
+    
+    func endSeriesReset(model: IntervalSeriesModel) {
+        let arrivalTime = Date()
+        
+        let last = Timepoint(name: "Location \(model.timepoints.count  + 1)", temporality: .instant(passingAt: arrivalTime))
+        model.timepoints.append(last)
+        model.state = StoppedWithData()
+    }
+}
+
+struct TimingDwell: IntervalState {
+    let arrivalTime: Date
+    
+    private func endDwell(for model: IntervalSeriesModel) {
+        let departureTime = Date()
+        
+        let timepoint = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .prolonged(arrival: arrivalTime, departure: departureTime))
+        model.timepoints.append(timepoint)
+    }
+    
+    func depart(model: IntervalSeriesModel) {
+        endDwell(for: model)
+        
+        model.state = TimingTravel()
+    }
+    
+    func arriveAtStop(model: IntervalSeriesModel) throws {
+        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot dwell at two places without traveling between them.")
+    }
+    
+    func endSeriesReset(model: IntervalSeriesModel) {
+        endDwell(for: model)
+        
+        model.state = StoppedWithData()
+    }
+    
+    
+}
+
+struct StoppedWithData: IntervalState {
+    func depart(model: IntervalSeriesModel) throws {
+        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
+    }
+    
+    func arriveAtStop(model: IntervalSeriesModel) throws {
+        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
+    }
+    
+    func endSeriesReset(model: IntervalSeriesModel) {
+        model.timepoints.removeAll()
+        model.state = Ready()
     }
 }
