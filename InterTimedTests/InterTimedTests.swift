@@ -8,222 +8,232 @@
 import Testing
 @testable import InterTimed
 import Foundation
+import RealModule
 
 @MainActor
 struct IntervalSeriesModelTests {
-    let model: IntervalSeriesModel
-    let units = Set([Calendar.Component.hour, .minute, .second])
     
-    init() {
-        self.model = IntervalSeriesModel()
-    }
-    
-    func datesEqualWithinSecond(_ first: Date, _ second: Date) -> Bool {
-        let firstDateComponents = Calendar.current.dateComponents(units, from: first)
-        let secondDateComponents = Calendar.current.dateComponents(units, from: second)
-        return firstDateComponents == secondDateComponents
-    }
-    
-    func getDefaultLocationNames(for locationCount: Int) -> [String] {
-        return (1...locationCount).map { "Location \($0)" }
-    }
-    
-    @Test func successfulStart() async throws {
-        let start = Date()
-        try model.startIntervalSeries()
+    @MainActor
+    @Suite struct SingleStateTransitionTests {
+        let model: IntervalSeriesModel
+        let units = Set([Calendar.Component.hour, .minute, .second])
         
-        #expect(model.timepoints == [
-            TimingPoint(name: "Location 1"),
-            TimingPoint(name: "Location 2")
-        ])
-        #expect(model.intervals.isEmpty)
-        let intervalInProgress = try #require(model.startOfIntervalInProgress)
-        #expect(datesEqualWithinSecond(start, intervalInProgress.start))
-    }
-    
-    @Test func endIntervalSkipDwell() async throws {
-        let start = Date()
-        try model.startIntervalSeries()
-        try await Task.sleep(nanoseconds: 2_000_000_000)
-        let end = Date()
-        try model.endTravelInterval(skippingDwellTime: true)
-        
-        #expect(model.timepoints == [
-            TimingPoint(name: "Location 1"),
-            TimingPoint(name: "Location 2"),
-            TimingPoint(name: "Location 3")
-        ])
-        #expect(model.intervals.count == 1)
-        #expect(datesEqualWithinSecond(start, model.intervals[0].departureTime))
-        #expect(datesEqualWithinSecond(end, model.intervals[0].arrivalTime))
-        
-        let intervalInProgress = try #require(model.startOfIntervalInProgress)
-        if case .travel(start: _) = intervalInProgress {} else {
-            Issue.record("Invalid interval type: expected .travel, got \(intervalInProgress).")
+        init() {
+            self.model = IntervalSeriesModel()
         }
-        #expect(datesEqualWithinSecond(intervalInProgress.start, end))
-    }
-    
-    @Test func endIntervalNoSkipDwell() async throws {
-        let start = Date()
-        try model.startIntervalSeries()
-        try await Task.sleep(nanoseconds: 2_000_000_000)
-        let end = Date()
-        try model.endTravelInterval(skippingDwellTime: false)
         
-        #expect(model.timepoints == [
-            TimingPoint(name: "Location 1"),
-            TimingPoint(name: "Location 2")
-        ])
-        #expect(model.intervals.count == 1)
-        #expect(datesEqualWithinSecond(model.intervals[0].departureTime, start))
-        #expect(datesEqualWithinSecond(model.intervals[0].arrivalTime, end))
-        
-        let intervalInProgress = try #require(model.startOfIntervalInProgress)
-        if case .dwell(start: _) = intervalInProgress {} else {
-            Issue.record("Invalid interval type: expected .dwell, got \(intervalInProgress).")
+        func getDefaultLocationNames(for locationCount: Int) -> [String] {
+            return (1...locationCount).map { "Location \($0)" }
         }
-        #expect(datesEqualWithinSecond(intervalInProgress.start, end))
-    }
-    
-    @Test func endDwell() async throws {
-        let start = Date()
-        try model.startIntervalSeries()
-        try await Task.sleep(nanoseconds: 2_000_000_000)
-        let startDwell = Date()
-        try model.endTravelInterval(skippingDwellTime: false)
-        try await Task.sleep(nanoseconds: 2_000_000_000)
-        let endDwell = Date()
-        try model.endDwellInterval()
         
-        #expect(model.timepoints.count == 3)
-        #expect(model.timepoints[0] == TimingPoint(name: "Location 1"))
-        #expect(model.timepoints[2] == TimingPoint(name: "Location 3"))
-        #expect(model.timepoints[1].name == "Location 2")
-        #expect(model.timepoints[1].dwellDuration?.components.seconds == 2)
-        
-        #expect(model.intervals.count == 1)
-        #expect(datesEqualWithinSecond(model.intervals[0].departureTime, start))
-        #expect(datesEqualWithinSecond(model.intervals[0].arrivalTime, startDwell))
-        
-        let intervalInProgress = try #require(model.startOfIntervalInProgress)
-        if case .travel(start: _) = intervalInProgress {} else {
-            Issue.record("Invalid interval type: expected .travel, got \(intervalInProgress).")
+        @MainActor
+        @Suite struct FromReadyState {
+            let model: IntervalSeriesModel
+            
+            init() throws {
+                self.model = IntervalSeriesModel()
+                #expect(model.timepoints == [])
+                try model.stateEqual(to: Ready())
+            }
+            
+            @Test func startSeriesWithTravelInterval() async throws {
+                let start = Date()
+                try model.departForNextTimepoint()
+                
+                #expect(model.timepoints ~== [
+                    Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
+                ])
+                try model.stateEqual(to: TimingTravel())
+            }
+            
+            @Test func startSeriesWithDwellInterval() async throws {
+                let start = Date()
+                try model.arriveAtStop()
+                
+                #expect(model.timepoints == [])
+                try model.stateEqual(to: TimingDwell(arrivalTime: start))
+            }
+            
+            @Test func attemptToEndSeriesBeforeStart() async throws {
+                #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")) {
+                    try model.endSeriesReset()
+                }
+            }
         }
-        #expect(datesEqualWithinSecond(intervalInProgress.start, endDwell))
+        
+        @MainActor @Suite struct FromTimingTravelState {
+            let model: IntervalSeriesModel
+            
+            init() throws {
+                self.model = IntervalSeriesModel()
+                let start = Date()
+                try model.departForNextTimepoint()
+                
+                #expect(model.timepoints ~== [
+                    Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
+                ])
+                try model.stateEqual(to: TimingTravel())
+            }
+            
+            @Test func changeTravelIntervalsOverInstantTimepoint() async throws {
+                let passMoment = Date()
+                let expectedTimepoints = model.timepoints + [
+                    Timepoint(name: "Location 2", temporality: .instant(passingAt: passMoment))
+                ]
+                try model.departForNextTimepoint()
+                
+                #expect(model.timepoints ~== expectedTimepoints)
+                try model.stateEqual(to: TimingTravel())
+            }
+            
+            @Test func collectDwellTime() async throws {
+                let arrivalTime = Date()
+                let expectedTimepoints = model.timepoints
+                try model.arriveAtStop()
+                
+                #expect(model.timepoints ~== expectedTimepoints)
+                try model.stateEqual(to: TimingDwell(arrivalTime: arrivalTime))
+            }
+            
+            @Test func endSeries() async throws {
+                let arrivalTime = Date()
+                let expectedTimepoints = model.timepoints + [
+                    Timepoint(name: "Location 2", temporality: .instant(passingAt: arrivalTime))
+                ]
+                try model.endSeriesReset()
+                
+                
+                #expect(model.timepoints ~== expectedTimepoints)
+                try model.stateEqual(to: StoppedWithData())
+            }
+        }
+        
+        @MainActor @Suite struct FromTimingDwellState {
+            let model: IntervalSeriesModel
+            let originvalState: TimingDwell
+            
+            init() throws {
+                self.model = IntervalSeriesModel()
+                
+                let arrivalTime = Date()
+                try model.arriveAtStop()
+                
+                #expect(model.timepoints == [])
+                try model.stateEqual(to: TimingDwell(arrivalTime: arrivalTime))
+                originvalState = TimingDwell(arrivalTime: arrivalTime)
+            }
+            
+            @Test func continueToNextTimepoint() async throws {
+                let departureTime = Date()
+                let expectedTimepoints = model.timepoints + [
+                    Timepoint(name: "Location 1", temporality: .prolonged(arrival: originvalState.arrivalTime, departure: departureTime))
+                ]
+                try model.departForNextTimepoint()
+                
+                #expect(model.timepoints ~== expectedTimepoints)
+                try model.stateEqual(to: TimingTravel())
+            }
+            
+            @Test func attemptToCollectAdditionalDwellTime() async throws {
+                #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot dwell at two places without traveling between them.")) {
+                    try model.arriveAtStop()
+                }
+            }
+            
+            @Test func endIntervalSeries() async throws {
+                let departureTime = Date()
+                let expectedTimepoints = model.timepoints + [
+                    Timepoint(name: "Location 1", temporality: .prolonged(arrival: originvalState.arrivalTime, departure: departureTime))
+                ]
+                try model.endSeriesReset()
+                
+                #expect(model.timepoints ~== expectedTimepoints)
+                try model.stateEqual(to: StoppedWithData())
+            }
+        }
+        
+        @MainActor @Suite struct FromStoppedWithDataState {
+            let model: IntervalSeriesModel
+            
+            init() throws {
+                self.model = IntervalSeriesModel()
+                
+                let departureTime = Date()
+                try model.departForNextTimepoint()
+                
+                let arrivalTime = Date()
+                try model.endSeriesReset()
+                
+                #expect(model.timepoints ~== [
+                    Timepoint(name: "Location 1", temporality: .instant(passingAt: departureTime)),
+                    Timepoint(name: "Location 2", temporality: .instant(passingAt: arrivalTime))
+                ])
+                try model.stateEqual(to: StoppedWithData())
+            }
+            
+            @Test func attemptToTimeAnotherTravel() async throws {
+                #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")) {
+                    try model.departForNextTimepoint()
+                }
+            }
+            
+            @Test func attemptToTimeAnotherDwell() async throws {
+                #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")) {
+                    try model.arriveAtStop()
+                }
+            }
+            
+            @Test func resetToInitialState() async throws {
+                try model.endSeriesReset()
+                
+                #expect(model.timepoints == [])
+                try model.stateEqual(to: Ready())
+            }
+        }
     }
-    
-    @Test func endIntervalSeries() async throws {
-        let start = Date()
-        try model.startIntervalSeries()
+}
+
+infix operator ~==: ComparisonPrecedence
+extension Array where Element == Timepoint {
+    static func ~== (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.count == rhs.count else {
+            return false
+        }
+        let zipped = zip(lhs, rhs)
         
-        try await Task.sleep(for: .seconds(2))
+        for (left, right) in zipped {
+            guard left.name == right.name else { return false }
+            guard left.temporality ~== right.temporality else { return false }
+        }
         
-        let startDwell = Date()
-        try model.endTravelInterval(skippingDwellTime: false)
-        
-        try await Task.sleep(for: .seconds(1))
-        
-        let startSecondTravel = Date()
-        try model.endDwellInterval()
-        
-        try await Task.sleep(for: .seconds(3))
-        
-        let startThirdTravel = Date()
-        try model.endTravelInterval(skippingDwellTime: true)
-        
-        try await Task.sleep(for: .seconds(1))
-        
-        let endSeries = Date()
-        try model.endIntervalSeries()
-        
-        #expect(model.intervals.count == 3)
-        #expect(datesEqualWithinSecond(model.intervals[0].departureTime, start))
-        #expect(datesEqualWithinSecond(model.intervals[0].arrivalTime, startDwell))
-        #expect(datesEqualWithinSecond(model.intervals[1].departureTime, startSecondTravel))
-        #expect(datesEqualWithinSecond(model.intervals[1].arrivalTime, startThirdTravel))
-        #expect(datesEqualWithinSecond(model.intervals[2].departureTime, startThirdTravel))
-        #expect(datesEqualWithinSecond(model.intervals[2].arrivalTime, endSeries))
-        
-        #expect(model.timepoints.map { $0.name } == getDefaultLocationNames(for: 4))
-        #expect(model.timepoints[1].dwellDuration?.components.seconds == 1)
-        #expect(model.timepoints[0].dwellDuration == nil)
-        #expect(model.timepoints[2].dwellDuration == nil)
-        #expect(model.timepoints[3].dwellDuration == nil)
-        
-        #expect(model.startOfIntervalInProgress == nil)
+        return true
     }
-    
-    @Test func startSeriesWhileRunning() async throws {
-        try model.startIntervalSeries()
-        
-        let error = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.startIntervalSeries()
-        })
-        
-        #expect(error == .cannotStartSeriesWithData)
+}
+
+extension Temporality {
+    static func ~==(_ left: Temporality, _ right: Temporality) -> Bool {
+        switch (left, right) {
+        case (.instant(passingAt: let leftDate), .instant(passingAt: let rightDate)):
+            return leftDate ~== rightDate
+        case (.prolonged(arrival: let leftArrival, departure: let leftDeparture), .prolonged(arrival: let rightArrival, departure: let rightDeparture)):
+            return leftArrival ~== rightArrival && leftDeparture ~== rightDeparture
+        default:
+            return false
+        }
     }
-    
-    @Test func startSeriesWhileStoppedWithData() async throws {
-        try model.startIntervalSeries()
-        try model.endTravelInterval(skippingDwellTime: false)
-        try model.endDwellInterval()
-        try model.endTravelInterval(skippingDwellTime: true)
-        try model.endIntervalSeries()
-        
-        let error = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.startIntervalSeries()
-        })
-        
-        #expect(error == .cannotStartSeriesWithData)
+}
+
+extension Date {
+    static func ~==(_ lhs: Date, _ rhs: Date) -> Bool {
+        return lhs.timeIntervalSinceReferenceDate.isApproximatelyEqual(to: rhs.timeIntervalSinceReferenceDate, absoluteTolerance: 0.001)
     }
-    
-    @Test func endDwellBeforeStart() async throws {
-        let error = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.endDwellInterval()
-        })
-        
-        #expect(error == .noDwellInterval)
-    }
-    
-    @Test func endDwellDuringTravel() async throws {
-        try model.startIntervalSeries()
-        
-        let error = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.endDwellInterval()
-        })
-        
-        #expect(error == .noDwellInterval)
-    }
-    
-    @Test func endTravelIntervalBeforeStart() async throws {
-        let errorWithDwell = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.endTravelInterval(skippingDwellTime: false)
-        })
-        
-        #expect(errorWithDwell == .cannotEndIntervalWhenNotRunning)
-        
-        let errorWithoutDwell = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.endTravelInterval(skippingDwellTime: true)
-        })
-        
-        #expect(errorWithoutDwell == .cannotEndIntervalWhenNotRunning)
-    }
-    
-    @Test func endTravelIntervalDuringDwell() async throws {
-        try model.startIntervalSeries()
-        try model.endTravelInterval(skippingDwellTime: false)
-        
-        let errorWithDwell = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.endTravelInterval(skippingDwellTime: false)
-        })
-        
-        #expect(errorWithDwell == .cannotEndIntervalWhenNotRunning)
-        
-        let errorWithoutDwell = #expect(throws: IntervalSeriesModel.UnsupportedOperationError.self, performing: {
-            try model.endTravelInterval(skippingDwellTime: true)
-        })
-        
-        #expect(errorWithoutDwell == .cannotEndIntervalWhenNotRunning)
+}
+
+extension IntervalSeriesModel {
+    func stateEqual<S: IntervalState>(to expected: S) throws {
+        let typedState = try #require(self.state as? S)
+        if let timingDwellState = typedState as? TimingDwell, let expectedTimingDwellState = expected as? TimingDwell {
+            #expect(timingDwellState.arrivalTime ~== expectedTimingDwellState.arrivalTime)
+        }
     }
 }

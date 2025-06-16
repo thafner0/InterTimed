@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		94961EE12DFFB9290018C1F9 /* RealModule in Frameworks */ = {isa = PBXBuildFile; productRef = 94961EE02DFFB9290018C1F9 /* RealModule */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9422C9122DFBECFB000EF9CF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -59,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94961EE12DFFB9290018C1F9 /* RealModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,6 +140,7 @@
 			);
 			name = InterTimedTests;
 			packageProductDependencies = (
+				94961EE02DFFB9290018C1F9 /* RealModule */,
 			);
 			productName = InterTimedTests;
 			productReference = 9422C9112DFBECFB000EF9CF /* InterTimedTests.xctest */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 9422C8FB2DFBECF9000EF9CF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				94961EDF2DFFB9290018C1F9 /* XCRemoteSwiftPackageReference "swift-numerics" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9422C9052DFBECF9000EF9CF /* Products */;
 			projectDirPath = "";
@@ -572,6 +581,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		94961EDF2DFFB9290018C1F9 /* XCRemoteSwiftPackageReference "swift-numerics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-numerics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		94961EE02DFFB9290018C1F9 /* RealModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94961EDF2DFFB9290018C1F9 /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = RealModule;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9422C8FC2DFBECF9000EF9CF /* Project object */;
 }
