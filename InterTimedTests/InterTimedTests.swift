@@ -15,16 +15,6 @@ struct IntervalSeriesModelTests {
     
     @MainActor
     @Suite struct SingleStateTransitionTests {
-        let model: IntervalSeriesModel
-        let units = Set([Calendar.Component.hour, .minute, .second])
-        
-        init() {
-            self.model = IntervalSeriesModel()
-        }
-        
-        func getDefaultLocationNames(for locationCount: Int) -> [String] {
-            return (1...locationCount).map { "Location \($0)" }
-        }
         
         @MainActor
         @Suite struct FromReadyState {
