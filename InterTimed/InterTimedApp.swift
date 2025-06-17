@@ -11,7 +11,7 @@ import SwiftUI
 struct InterTimedApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            IntervalList()
         }
     }
 }
