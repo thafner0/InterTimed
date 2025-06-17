@@ -197,7 +197,7 @@ struct IntervalSeriesModelTests {
                 Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
             ])
             #expect(model.intervals == [
-                .dwell(duration: nil, locationName: "Location 1")
+                Interval(type: .dwell(duration: nil, locationName: "Location 1"), id: 0)
             ])
         }
         
@@ -212,7 +212,7 @@ struct IntervalSeriesModelTests {
                 Timepoint(name: "Location 1", temporality: .prolonged(arrival: arrival, departure: departure))
             ])
             #expect(model.intervals ~== [
-                .dwell(duration: Duration.seconds(arrival.distance(to: departure)), locationName: "Location 1")
+                Interval(type: .dwell(duration: Duration.seconds(arrival.distance(to: departure)), locationName: "Location 1"), id: 0)
             ])
         }
         
@@ -242,13 +242,13 @@ struct IntervalSeriesModelTests {
                 Timepoint(name: "Location 4", temporality: .prolonged(arrival: arriveFourth, departure: end))
             ])
             #expect(model.intervals ~== [
-                .dwell(duration: nil, locationName: "Location 1"),
-                .travel(duration: Duration.seconds(departFirst.distance(to: arriveSecond))),
-                .dwell(duration: Duration.seconds(arriveSecond.distance(to: departSecond)), locationName: "Location 2"),
-                .travel(duration: Duration.seconds(departSecond.distance(to: arriveDepartThird))),
-                .dwell(duration: nil, locationName: "Location 3"),
-                .travel(duration: Duration.seconds(arriveDepartThird.distance(to: arriveFourth))),
-                .dwell(duration: Duration.seconds(arriveFourth.distance(to: end)), locationName: "Location 4")
+                Interval(type: .dwell(duration: nil, locationName: "Location 1"), id: 0),
+                Interval(type: .travel(duration: Duration.seconds(departFirst.distance(to: arriveSecond))), id: -1),
+                Interval(type: .dwell(duration: Duration.seconds(arriveSecond.distance(to: departSecond)), locationName: "Location 2"), id: 1),
+                Interval(type: .travel(duration: Duration.seconds(departSecond.distance(to: arriveDepartThird))), id: -2),
+                Interval(type: .dwell(duration: nil, locationName: "Location 3"), id: 2),
+                Interval(type: .travel(duration: Duration.seconds(arriveDepartThird.distance(to: arriveFourth))), id: -3),
+                Interval(type: .dwell(duration: Duration.seconds(arriveFourth.distance(to: end)), locationName: "Location 4"), id: 3)
             ])
         }
     }
@@ -316,6 +316,12 @@ extension IntervalSeriesModel {
 
 extension Interval {
     static func ~==(_ lhs: Interval, _ rhs: Interval) -> Bool {
+        return lhs.type ~== rhs.type && lhs.id == rhs.id
+    }
+}
+
+extension Interval.`Type` {
+    static func ~==(_ lhs: Interval.`Type`, _ rhs: Interval.`Type`) -> Bool {
         func norm(_ duration: Duration) -> Double {
             return Double(duration.attoseconds) * Double.pow(10, -15)
         }

@@ -12,9 +12,14 @@ struct Timepoint: Equatable {
     var temporality: Temporality
 }
 
-enum Interval: Equatable {
-    case travel(duration: Duration)
-    case dwell(duration: Duration?, locationName: String)
+struct Interval: Equatable, Identifiable {
+    var type: Type
+    var id: Int
+    
+    enum `Type`: Equatable {
+        case travel(duration: Duration)
+        case dwell(duration: Duration?, locationName: String)
+    }
 }
 
 enum Temporality: Equatable {

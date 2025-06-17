@@ -7,6 +7,7 @@
 
 import Foundation
 
+@Observable
 class IntervalSeriesModel {
     var timepoints: [Timepoint] = []
     var intervals: [Interval] {
@@ -14,12 +15,12 @@ class IntervalSeriesModel {
         
         var intervals: [Interval] = []
         intervals.reserveCapacity(timepoints.count * 2 - 1)
-        for (first, second) in adjacentTimepoints {
-            intervals.append(.dwell(duration: first.temporality.dwellDuration, locationName: first.name))
-            intervals.append(.travel(duration: Duration.seconds(first.temporality.departureTime.distance(to: second.temporality.arrivalTime))))
+        for (index, (first, second)) in adjacentTimepoints.enumerated() {
+            intervals.append(Interval(type: .dwell(duration: first.temporality.dwellDuration, locationName: first.name), id: index))
+            intervals.append(Interval(type: .travel(duration: Duration.seconds(first.temporality.departureTime.distance(to: second.temporality.arrivalTime))), id: -(index + 1)))
         }
         if let lastTimepoint = timepoints.last {
-            intervals.append(.dwell(duration: lastTimepoint.temporality.dwellDuration, locationName: lastTimepoint.name))
+            intervals.append(Interval(type: .dwell(duration: lastTimepoint.temporality.dwellDuration, locationName: lastTimepoint.name), id: timepoints.count - 1))
         }
         
         return intervals
