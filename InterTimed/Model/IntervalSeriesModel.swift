@@ -9,8 +9,20 @@ import Foundation
 
 class IntervalSeriesModel {
     var timepoints: [Timepoint] = []
-    var interval: [Interval] {
-        []
+    var intervals: [Interval] {
+        let adjacentTimepoints = zip(timepoints.dropLast(), timepoints.dropFirst())
+        
+        var intervals: [Interval] = []
+        intervals.reserveCapacity(timepoints.count * 2 - 1)
+        for (first, second) in adjacentTimepoints {
+            intervals.append(.dwell(duration: first.temporality.dwellDuration, locationName: first.name))
+            intervals.append(.travel(duration: Duration.seconds(first.temporality.departureTime.distance(to: second.temporality.arrivalTime))))
+        }
+        if let lastTimepoint = timepoints.last {
+            intervals.append(.dwell(duration: lastTimepoint.temporality.dwellDuration, locationName: lastTimepoint.name))
+        }
+        
+        return intervals
     }
     fileprivate(set) var state: any IntervalState = Ready()
     

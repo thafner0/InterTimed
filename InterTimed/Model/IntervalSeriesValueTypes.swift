@@ -13,8 +13,8 @@ struct Timepoint: Equatable {
 }
 
 enum Interval: Equatable {
-    case travel(departureTime: Date, arrivalTime: Date)
-    case dwell(arrivalTime: Date, departureTime: Date, locationName: String)
+    case travel(duration: Duration)
+    case dwell(duration: Duration?, locationName: String)
 }
 
 enum Temporality: Equatable {
@@ -32,6 +32,15 @@ enum Temporality: Equatable {
         switch self {
         case .instant(passingAt: let departure), .prolonged(arrival: _, departure: let departure):
             return departure
+        }
+    }
+    
+    var dwellDuration: Duration? {
+        switch self {
+        case .instant(passingAt: _):
+            return nil
+        case .prolonged(arrival: let arrival, departure: let departure):
+            return Duration.seconds(arrival.distance(to: departure))
         }
     }
 }
