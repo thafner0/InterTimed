@@ -22,10 +22,12 @@ struct IntervalList: View {
                 Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
                     try! model.departForNextTimepoint()
                 }
+                .disabled(!model.state.canDepart)
                 
                 Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
                     try! model.arriveAtStop()
                 }
+                .disabled(!model.state.canArriveAtStop)
             }
             
             ToolbarSpacer(placement: .bottomBar)
@@ -34,6 +36,7 @@ struct IntervalList: View {
                 Button("Stop", systemImage: "stop.fill") {
                     try! model.endSeriesReset()
                 }
+                .disabled(!model.state.canEndSeriesReset)
             }
         }
     }

@@ -45,12 +45,19 @@ class IntervalSeriesModel {
 }
 
 protocol IntervalState: Equatable {
+    var canDepart: Bool { get }
+    var canArriveAtStop: Bool { get }
+    var canEndSeriesReset: Bool { get }
     func depart(model: IntervalSeriesModel) throws
     func arriveAtStop(model: IntervalSeriesModel) throws
     func endSeriesReset(model: IntervalSeriesModel) throws
 }
 
 struct Ready: IntervalState {
+    let canDepart = true
+    let canArriveAtStop = true
+    let canEndSeriesReset = false
+    
     func depart(model: IntervalSeriesModel) {
         let start = Date()
         let origin = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: start))
@@ -69,6 +76,10 @@ struct Ready: IntervalState {
 }
 
 struct TimingTravel: IntervalState {
+    let canDepart = true
+    let canArriveAtStop = true
+    let canEndSeriesReset = true
+    
     func depart(model: IntervalSeriesModel) {
         let departureTime = Date()
         
@@ -95,6 +106,10 @@ struct TimingTravel: IntervalState {
 struct TimingDwell: IntervalState {
     let arrivalTime: Date
     
+    let canDepart = true
+    let canArriveAtStop = false
+    let canEndSeriesReset = true
+
     private func endDwell(for model: IntervalSeriesModel) {
         let departureTime = Date()
         
@@ -122,6 +137,10 @@ struct TimingDwell: IntervalState {
 }
 
 struct StoppedWithData: IntervalState {
+    let canDepart = false
+    let canArriveAtStop = false
+    let canEndSeriesReset = true
+    
     func depart(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
     }
