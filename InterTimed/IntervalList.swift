@@ -10,6 +10,14 @@ import SwiftUI
 struct IntervalList: View {
     @Bindable var model = IntervalSeriesModel()
     
+    var stopButtonSymbolName: String {
+        if model.state is StoppedWithData {
+            return "eraser"
+        } else {
+            return "stop.fill"
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             List(model.intervals) { interval in
@@ -18,25 +26,27 @@ struct IntervalList: View {
             .navigationTitle("Intervals")
         }
         .toolbar {
-            ToolbarItemGroup(placement: .bottomBar) {
-                Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
-                    try! model.departForNextTimepoint()
+            if model.state.canDepart {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
+                        try! model.departForNextTimepoint()
+                    }
+                    
+                    Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
+                        try! model.arriveAtStop()
+                    }
+                    .disabled(!model.state.canArriveAtStop)
                 }
-                .disabled(!model.state.canDepart)
-                
-                Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
-                    try! model.arriveAtStop()
-                }
-                .disabled(!model.state.canArriveAtStop)
             }
             
-            ToolbarSpacer(placement: .bottomBar)
+            ToolbarSpacer(.fixed, placement: .bottomBar)
             
-            ToolbarItemGroup(placement: .bottomBar) {
-                Button("Stop", systemImage: "stop.fill") {
-                    try! model.endSeriesReset()
+            if model.state.canEndSeriesReset {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    Button("Stop", systemImage: stopButtonSymbolName) {
+                        try! model.endSeriesReset()
+                    }
                 }
-                .disabled(!model.state.canEndSeriesReset)
             }
         }
     }
