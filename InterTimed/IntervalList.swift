@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IntervalList: View {
-    @Bindable var model = IntervalSeriesModel()
+    @State var model = IntervalSeriesModel()
     
     var stopButtonSymbolName: String {
         if model.state is StoppedWithData {
@@ -27,15 +27,18 @@ struct IntervalList: View {
         }
         .toolbar {
             if model.state.canDepart {
-                ToolbarItemGroup(placement: .bottomBar) {
+                ToolbarItem(placement: .bottomBar) {
                     Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
                         try! model.departForNextTimepoint()
                     }
-                    
+                }
+            }
+            
+            if model.state.canArriveAtStop {
+                ToolbarItem(placement: .bottomBar) {
                     Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
                         try! model.arriveAtStop()
                     }
-                    .disabled(!model.state.canArriveAtStop)
                 }
             }
             
