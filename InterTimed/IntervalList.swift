@@ -21,8 +21,14 @@ struct IntervalList: View {
     
     var body: some View {
         NavigationStack {
-            List(model.intervals) { interval in
-                IntervalListRow(interval: interval)
+            List {
+                ForEach(model.timepoints.legs) { leg in
+                    Text("Location info for \(leg.start.name)")
+                    Text("\(leg.start.name) -> \(leg.end.name)")
+                }
+                if let last = model.timepoints.last {
+                    Text("Location info for \(last.name)")
+                }
             }
             .navigationTitle("Intervals")
         }

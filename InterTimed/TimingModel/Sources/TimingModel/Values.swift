@@ -7,9 +7,40 @@
 
 import Foundation
 
-public struct Timepoint: Equatable {
+@Observable
+public class Timepoint: Equatable, Identifiable {
     public var name: String
-    public var temporality: Temporality
+    public internal(set) var temporality: Temporality
+    public var id = UUID()
+    
+    init(name: String, temporality: Temporality) {
+        self.name = name
+        self.temporality = temporality
+    }
+    
+    public static func ==(lhs: Timepoint, rhs: Timepoint) -> Bool {
+        return lhs.name == rhs.name && lhs.temporality == rhs.temporality
+    }
+}
+
+public struct Leg: Equatable, Identifiable {
+    public internal(set) var start: Timepoint
+    public internal(set) var end: Timepoint
+    
+    public var id: UUID { start.id }
+}
+
+public extension Array where Element == Timepoint {
+    var legs: [Leg] {
+        let zip = zip(self.dropLast(), self.dropFirst())
+        
+        var legs = [Leg]()
+        for (start, end) in zip {
+            legs.append(Leg(start: start, end: end))
+        }
+        
+        return legs
+    }
 }
 
 public struct Interval: Equatable, Identifiable {
