@@ -1,6 +1,6 @@
 //
 //  IntervalSeriesValueTypes.swift
-//  InterTimed
+//  TimingModel
 //
 //  Created by Trevor Hafner on 14/06/2025.
 //
