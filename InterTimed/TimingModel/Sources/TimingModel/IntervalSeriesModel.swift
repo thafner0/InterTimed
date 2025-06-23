@@ -8,9 +8,9 @@
 import Foundation
 
 @Observable
-class IntervalSeriesModel {
-    var timepoints: [Timepoint] = []
-    var intervals: [Interval] {
+public class IntervalSeriesModel {
+    public var timepoints: [Timepoint] = []
+    public var intervals: [Interval] {
         let adjacentTimepoints = zip(timepoints.dropLast(), timepoints.dropFirst())
         
         var intervals: [Interval] = []
@@ -25,26 +25,28 @@ class IntervalSeriesModel {
         
         return intervals
     }
-    fileprivate(set) var state: any IntervalState = Ready()
+    public internal(set) var state: any IntervalState = Ready()
     
-    func departForNextTimepoint() throws {
+    public func departForNextTimepoint() throws {
         try state.depart(model: self)
     }
     
-    func arriveAtStop() throws {
+    public func arriveAtStop() throws {
         try state.arriveAtStop(model: self)
     }
     
-    func endSeriesReset() throws {
+    public func endSeriesReset() throws {
         try state.endSeriesReset(model: self)
     }
     
-    nonisolated enum ModelError: Error, Equatable {
+    nonisolated public enum ModelError: Error, Equatable {
         case invalidStateTransition(reason: String)
     }
+    
+    public init() {}
 }
 
-protocol IntervalState: Equatable {
+public protocol IntervalState: Equatable {
     var canDepart: Bool { get }
     var canArriveAtStop: Bool { get }
     var canEndSeriesReset: Bool { get }
@@ -53,34 +55,34 @@ protocol IntervalState: Equatable {
     func endSeriesReset(model: IntervalSeriesModel) throws
 }
 
-struct Ready: IntervalState {
-    let canDepart = true
-    let canArriveAtStop = true
-    let canEndSeriesReset = false
+public struct Ready: IntervalState {
+    public let canDepart = true
+    public let canArriveAtStop = true
+    public let canEndSeriesReset = false
     
-    func depart(model: IntervalSeriesModel) {
+    public func depart(model: IntervalSeriesModel) {
         let start = Date()
         let origin = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: start))
         model.timepoints.append(origin)
         model.state = TimingTravel()
     }
     
-    func arriveAtStop(model: IntervalSeriesModel) {
+    public func arriveAtStop(model: IntervalSeriesModel) {
         let start = Date()
         model.state = TimingDwell(arrivalTime: start)
     }
     
-    func endSeriesReset(model: IntervalSeriesModel) throws {
+    public func endSeriesReset(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")
     }
 }
 
-struct TimingTravel: IntervalState {
-    let canDepart = true
-    let canArriveAtStop = true
-    let canEndSeriesReset = true
+public struct TimingTravel: IntervalState {
+    public let canDepart = true
+    public let canArriveAtStop = true
+    public let canEndSeriesReset = true
     
-    func depart(model: IntervalSeriesModel) {
+    public func depart(model: IntervalSeriesModel) {
         let departureTime = Date()
         
         let next = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: departureTime))
@@ -88,13 +90,13 @@ struct TimingTravel: IntervalState {
         model.state = TimingTravel()
     }
     
-    func arriveAtStop(model: IntervalSeriesModel) {
+    public func arriveAtStop(model: IntervalSeriesModel) {
         let arrivalTime = Date()
         
         model.state = TimingDwell(arrivalTime: arrivalTime)
     }
     
-    func endSeriesReset(model: IntervalSeriesModel) {
+    public func endSeriesReset(model: IntervalSeriesModel) {
         let arrivalTime = Date()
         
         let last = Timepoint(name: "Location \(model.timepoints.count  + 1)", temporality: .instant(passingAt: arrivalTime))
@@ -103,12 +105,12 @@ struct TimingTravel: IntervalState {
     }
 }
 
-struct TimingDwell: IntervalState {
-    let arrivalTime: Date
+public struct TimingDwell: IntervalState {
+    public let arrivalTime: Date
     
-    let canDepart = true
-    let canArriveAtStop = false
-    let canEndSeriesReset = true
+    public let canDepart = true
+    public let canArriveAtStop = false
+    public let canEndSeriesReset = true
 
     private func endDwell(for model: IntervalSeriesModel) {
         let departureTime = Date()
@@ -117,17 +119,17 @@ struct TimingDwell: IntervalState {
         model.timepoints.append(timepoint)
     }
     
-    func depart(model: IntervalSeriesModel) {
+    public func depart(model: IntervalSeriesModel) {
         endDwell(for: model)
         
         model.state = TimingTravel()
     }
     
-    func arriveAtStop(model: IntervalSeriesModel) throws {
+    public func arriveAtStop(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot dwell at two places without traveling between them.")
     }
     
-    func endSeriesReset(model: IntervalSeriesModel) {
+    public func endSeriesReset(model: IntervalSeriesModel) {
         endDwell(for: model)
         
         model.state = StoppedWithData()
@@ -136,20 +138,20 @@ struct TimingDwell: IntervalState {
     
 }
 
-struct StoppedWithData: IntervalState {
-    let canDepart = false
-    let canArriveAtStop = false
-    let canEndSeriesReset = true
+public struct StoppedWithData: IntervalState {
+    public let canDepart = false
+    public let canArriveAtStop = false
+    public let canEndSeriesReset = true
     
-    func depart(model: IntervalSeriesModel) throws {
+    public func depart(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
     }
     
-    func arriveAtStop(model: IntervalSeriesModel) throws {
+    public func arriveAtStop(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
     }
     
-    func endSeriesReset(model: IntervalSeriesModel) {
+    public func endSeriesReset(model: IntervalSeriesModel) {
         model.timepoints.removeAll()
         model.state = Ready()
     }

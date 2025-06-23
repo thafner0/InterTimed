@@ -7,40 +7,45 @@
 
 import Foundation
 
-struct Timepoint: Equatable {
-    var name: String
-    var temporality: Temporality
+public struct Timepoint: Equatable {
+    public var name: String
+    public var temporality: Temporality
 }
 
-struct Interval: Equatable, Identifiable {
-    var type: Type
-    var id: Int
+public struct Interval: Equatable, Identifiable {
+    public var type: Type
+    public var id: Int
     
-    enum `Type`: Equatable {
+    public enum `Type`: Equatable {
         case travel(duration: Duration)
         case dwell(duration: Duration?, locationName: String)
     }
+    
+    public init(type: `Type`, id: Int) {
+        self.type = type
+        self.id = id
+    }
 }
 
-enum Temporality: Equatable {
+public enum Temporality: Equatable {
     case instant(passingAt: Date)
     case prolonged(arrival: Date, departure: Date)
     
-    var arrivalTime: Date {
+    public var arrivalTime: Date {
         switch self {
         case .instant(passingAt: let arrival), .prolonged(arrival: let arrival, departure: _):
             return arrival
         }
     }
     
-    var departureTime: Date {
+    public var departureTime: Date {
         switch self {
         case .instant(passingAt: let departure), .prolonged(arrival: _, departure: let departure):
             return departure
         }
     }
     
-    var dwellDuration: Duration? {
+    public var dwellDuration: Duration? {
         switch self {
         case .instant(passingAt: _):
             return nil
