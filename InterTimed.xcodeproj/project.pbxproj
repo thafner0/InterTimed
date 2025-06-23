@@ -33,9 +33,22 @@
 		9422C91B2DFBECFB000EF9CF /* InterTimedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InterTimedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		94ABCF052E08F92400BCB3FE /* Exceptions for "InterTimed" folder in "InterTimed" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				InterTimed/TimingModel,
+			);
+			target = 9422C9032DFBECF9000EF9CF /* InterTimed */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9422C9062DFBECF9000EF9CF /* InterTimed */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				94ABCF052E08F92400BCB3FE /* Exceptions for "InterTimed" folder in "InterTimed" target */,
+			);
 			path = InterTimed;
 			sourceTree = "<group>";
 		};
