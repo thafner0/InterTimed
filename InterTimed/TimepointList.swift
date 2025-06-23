@@ -24,6 +24,7 @@ struct TimepointList: View {
             List {
                 ForEach(model.timepoints.legs) { leg in
                     TimepointCell(timepoint: leg.start)
+                    LegCell(leg: leg)
                 }
                 if let last = model.timepoints.last {
                     TimepointCell(timepoint: last)

@@ -41,6 +41,12 @@ public struct Leg: Equatable, Identifiable {
     public internal(set) var end: Timepoint
     
     public var id: UUID { start.id }
+    
+    public static var random: Leg {
+        let start = Timepoint(name: "Start", temporality: .instant(passingAt: Date()))
+        let end = Timepoint(name: "End", temporality: .instant(passingAt: Date().addingTimeInterval(.random(in: 60...6000))))
+        return Leg(start: start, end: end)
+    }
 }
 
 public extension Array where Element == Timepoint {
@@ -53,21 +59,6 @@ public extension Array where Element == Timepoint {
         }
         
         return legs
-    }
-}
-
-public struct Interval: Equatable, Identifiable {
-    public var type: Type
-    public var id: Int
-    
-    public enum `Type`: Equatable {
-        case travel(duration: Duration)
-        case dwell(duration: Duration?, locationName: String)
-    }
-    
-    public init(type: `Type`, id: Int) {
-        self.type = type
-        self.id = id
     }
 }
 
