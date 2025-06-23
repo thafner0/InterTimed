@@ -13,7 +13,7 @@ struct LegCell: View {
     
     var body: some View {
         HStack {
-            Image(systemName: "arrow.down")
+            Image(systemName: "arrow.up")
             Spacer()
             Text(leg.end.temporality.arrivalTime, format: .stopwatch(startingAt: leg.start.temporality.departureTime))
         }

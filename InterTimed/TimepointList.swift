@@ -22,12 +22,12 @@ struct TimepointList: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(model.timepoints.legs) { leg in
-                    TimepointCell(timepoint: leg.start)
+                ForEach(model.timepoints.legs.reversed()) { leg in
+                    TimepointCell(timepoint: leg.end)
                     LegCell(leg: leg)
                 }
-                if let last = model.timepoints.last {
-                    TimepointCell(timepoint: last)
+                if let first = model.timepoints.first {
+                    TimepointCell(timepoint: first)
                 }
             }
             .navigationTitle("Intervals")
@@ -36,7 +36,9 @@ struct TimepointList: View {
             if model.state.canDepart {
                 ToolbarItem(placement: .bottomBar) {
                     Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
-                        try! model.departForNextTimepoint()
+                        withAnimation {
+                            try! model.departForNextTimepoint()
+                        }
                     }
                 }
             }
@@ -44,7 +46,9 @@ struct TimepointList: View {
             if model.state.canArriveAtStop {
                 ToolbarItem(placement: .bottomBar) {
                     Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
-                        try! model.arriveAtStop()
+                        withAnimation {
+                            try! model.arriveAtStop()
+                        }
                     }
                 }
             }
@@ -54,7 +58,9 @@ struct TimepointList: View {
             if model.state.canEndSeriesReset {
                 ToolbarItemGroup(placement: .bottomBar) {
                     Button("Stop", systemImage: stopButtonSymbolName) {
-                        try! model.endSeriesReset()
+                        withAnimation {
+                            try! model.endSeriesReset()
+                        }
                     }
                 }
             }
