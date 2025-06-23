@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 public class IntervalSeriesModel {
-    public internal(set) var timepoints: [Timepoint] = []
+    public internal(set) var timepoints: [Timepoint] = [] 
     
     public internal(set) var state: any IntervalState = Ready()
     

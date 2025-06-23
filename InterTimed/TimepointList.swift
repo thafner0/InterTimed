@@ -1,5 +1,5 @@
 //
-//  IntervalList.swift
+//  TimepointList.swift
 //  InterTimed
 //
 //  Created by Trevor Hafner on 13/06/2025.
@@ -8,7 +8,7 @@
 import SwiftUI
 import TimingModel
 
-struct IntervalList: View {
+struct TimepointList: View {
     @State var model = IntervalSeriesModel()
     
     var stopButtonSymbolName: String {
@@ -23,11 +23,10 @@ struct IntervalList: View {
         NavigationStack {
             List {
                 ForEach(model.timepoints.legs) { leg in
-                    Text("Location info for \(leg.start.name)")
-                    Text("\(leg.start.name) -> \(leg.end.name)")
+                    TimepointCell(timepoint: leg.start)
                 }
                 if let last = model.timepoints.last {
-                    Text("Location info for \(last.name)")
+                    TimepointCell(timepoint: last)
                 }
             }
             .navigationTitle("Intervals")
@@ -63,5 +62,5 @@ struct IntervalList: View {
 }
 
 #Preview {
-    IntervalList()
+    TimepointList()
 }

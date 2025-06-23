@@ -21,6 +21,19 @@ public class Timepoint: Equatable, Identifiable {
     public static func ==(lhs: Timepoint, rhs: Timepoint) -> Bool {
         return lhs.name == rhs.name && lhs.temporality == rhs.temporality
     }
+    
+    public static var random: Timepoint {
+        let isStopping = Bool.random()
+        let temporality: Temporality
+        switch isStopping {
+        case true:
+            temporality = .prolonged(arrival: Date().addingTimeInterval(-TimeInterval.random(in: 10...60)), departure: Date().addingTimeInterval(TimeInterval.random(in: 10...60)))
+        case false:
+            temporality = .instant(passingAt: Date().addingTimeInterval(TimeInterval.random(in: -60...60)))
+        }
+        
+        return Timepoint(name: "Random", temporality: temporality)
+    }
 }
 
 public struct Leg: Equatable, Identifiable {
