@@ -65,27 +65,24 @@ public extension Array where Element == Timepoint {
 public enum Temporality: Equatable {
     case instant(passingAt: Date)
     case prolonged(arrival: Date, departure: Date)
+    case awaitingArrival
+    case awaitingDeparture(afterArrival: Date)
     
-    public var arrivalTime: Date {
+    public var arrivalTime: Date? {
         switch self {
-        case .instant(passingAt: let arrival), .prolonged(arrival: let arrival, departure: _):
+        case .instant(passingAt: let arrival), .prolonged(arrival: let arrival, departure: _), .awaitingDeparture(afterArrival: let arrival):
             return arrival
+        case .awaitingArrival:
+            return nil
         }
     }
     
-    public var departureTime: Date {
+    public var departureTime: Date? {
         switch self {
         case .instant(passingAt: let departure), .prolonged(arrival: _, departure: let departure):
             return departure
-        }
-    }
-    
-    public var dwellDuration: Duration? {
-        switch self {
-        case .instant(passingAt: _):
+        case .awaitingArrival, .awaitingDeparture(afterArrival: _):
             return nil
-        case .prolonged(arrival: let arrival, departure: let departure):
-            return Duration.seconds(arrival.distance(to: departure))
         }
     }
 }

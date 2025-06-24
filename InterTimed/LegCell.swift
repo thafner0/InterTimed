@@ -15,7 +15,13 @@ struct LegCell: View {
         HStack {
             Image(systemName: "arrow.up")
             Spacer()
-            Text(leg.end.temporality.arrivalTime, format: .stopwatch(startingAt: leg.start.temporality.departureTime))
+            if let departureTime = leg.start.temporality.departureTime {
+                if let arrivalTime = leg.end.temporality.arrivalTime {
+                    Text(arrivalTime, format: .stopwatch(startingAt: departureTime))
+                } else {
+                    Text(TimeDataSource<Date>.currentDate, format: .stopwatch(startingAt: departureTime))
+                }
+            }
         }
     }
 }

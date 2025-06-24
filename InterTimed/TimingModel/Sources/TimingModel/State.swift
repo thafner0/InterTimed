@@ -23,13 +23,21 @@ public struct Ready: IntervalState {
     
     public func depart(model: IntervalSeriesModel) {
         let start = Date()
-        let origin = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: start))
+        let origin = Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
         model.timepoints.append(origin)
+        
+        let destination = Timepoint(name: "Location 2", temporality: .awaitingArrival)
+        model.timepoints.append(destination)
+        
         model.state = TimingTravel()
     }
     
     public func arriveAtStop(model: IntervalSeriesModel) {
         let start = Date()
+        
+        let origin = Timepoint(name: "Location 1", temporality: .awaitingDeparture(afterArrival: start))
+        model.timepoints.append(origin)
+        
         model.state = TimingDwell(arrivalTime: start)
     }
     
@@ -46,7 +54,9 @@ public struct TimingTravel: IntervalState {
     public func depart(model: IntervalSeriesModel) {
         let departureTime = Date()
         
-        let next = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .instant(passingAt: departureTime))
+        model.timepoints[model.timepoints.count - 1].temporality = .instant(passingAt: departureTime)
+        
+        let next = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .awaitingArrival)
         model.timepoints.append(next)
         model.state = TimingTravel()
     }
@@ -54,14 +64,16 @@ public struct TimingTravel: IntervalState {
     public func arriveAtStop(model: IntervalSeriesModel) {
         let arrivalTime = Date()
         
+        model.timepoints[model.timepoints.count - 1].temporality = .awaitingDeparture(afterArrival: arrivalTime)
+        
         model.state = TimingDwell(arrivalTime: arrivalTime)
     }
     
     public func endSeriesReset(model: IntervalSeriesModel) {
         let arrivalTime = Date()
         
-        let last = Timepoint(name: "Location \(model.timepoints.count  + 1)", temporality: .instant(passingAt: arrivalTime))
-        model.timepoints.append(last)
+        model.timepoints[model.timepoints.count - 1].temporality = .instant(passingAt: arrivalTime)
+        
         model.state = StoppedWithData()
     }
 }
@@ -76,13 +88,16 @@ public struct TimingDwell: IntervalState {
     private func endDwell(for model: IntervalSeriesModel) {
         let departureTime = Date()
         
-        let timepoint = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .prolonged(arrival: arrivalTime, departure: departureTime))
-        model.timepoints.append(timepoint)
+        model.timepoints[model.timepoints.count - 1].temporality = .prolonged(arrival: arrivalTime, departure: departureTime)
+        
     }
     
     public func depart(model: IntervalSeriesModel) {
         endDwell(for: model)
         
+        let timepoint = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .awaitingArrival)
+        model.timepoints.append(timepoint)
+
         model.state = TimingTravel()
     }
     

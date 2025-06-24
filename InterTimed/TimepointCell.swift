@@ -22,6 +22,10 @@ struct TimepointCell: View {
                     .italic()
             case .prolonged(arrival: let arrival, departure: let departure):
                 Text(departure, format: .stopwatch(startingAt: arrival))
+            case .awaitingDeparture(afterArrival: let arrival):
+                Text(TimeDataSource<Date>.currentDate, format: .stopwatch(startingAt: arrival))
+            case .awaitingArrival:
+                EmptyView()
             }
         }
     }
