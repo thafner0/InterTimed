@@ -10,6 +10,7 @@ import TimingModel
 
 struct TimepointList: View {
     @State var model = IntervalSeriesModel()
+    @Namespace var animation
     
     var stopButtonSymbolName: String {
         if model.state is StoppedWithData {
@@ -33,36 +34,33 @@ struct TimepointList: View {
             .navigationTitle("Intervals")
         }
         .toolbar {
-            if model.state.canDepart {
-                ToolbarItem(placement: .bottomBar) {
-                    Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
-                        withAnimation {
-                            try! model.departForNextTimepoint()
-                        }
+            ToolbarItem(placement: .bottomBar) {
+                Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
+                    withAnimation {
+                        try! model.departForNextTimepoint()
                     }
                 }
+                .disabled(!model.state.canDepart)
             }
             
-            if model.state.canArriveAtStop {
-                ToolbarItem(placement: .bottomBar) {
-                    Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
-                        withAnimation {
-                            try! model.arriveAtStop()
-                        }
+            ToolbarItem(placement: .bottomBar) {
+                Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
+                    withAnimation {
+                        try! model.arriveAtStop()
                     }
                 }
+                .disabled(!model.state.canArriveAtStop)
             }
             
             ToolbarSpacer(.fixed, placement: .bottomBar)
             
-            if model.state.canEndSeriesReset {
-                ToolbarItemGroup(placement: .bottomBar) {
-                    Button("Stop", systemImage: stopButtonSymbolName) {
-                        withAnimation {
-                            try! model.endSeriesReset()
-                        }
+            ToolbarItem(placement: .bottomBar) {
+                Button("Stop", systemImage: stopButtonSymbolName) {
+                    withAnimation {
+                        try! model.endSeriesReset()
                     }
                 }
+                .disabled(!model.state.canEndSeriesReset)
             }
         }
     }
