@@ -10,11 +10,11 @@ import TimingModel
 import Foundation
 
 struct TimepointCell: View {
-    let timepoint: Timepoint
+    @Bindable var timepoint: Timepoint
     
     var body: some View {
         HStack {
-            Text(timepoint.name)
+            TextField("Station, Point of Interest, Landmark, etc", text: $timepoint.name)
             Spacer()
             switch timepoint.temporality {
             case .instant(passingAt: _):
