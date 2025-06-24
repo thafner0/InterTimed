@@ -10,15 +10,6 @@ import TimingModel
 
 struct TimepointList: View {
     @State var model = IntervalSeriesModel()
-    @Namespace var animation
-    
-    var stopButtonSymbolName: String {
-        if model.state is StoppedWithData {
-            return "eraser"
-        } else {
-            return "stop.fill"
-        }
-    }
     
     var body: some View {
         NavigationStack {
@@ -55,9 +46,15 @@ struct TimepointList: View {
             ToolbarSpacer(.fixed, placement: .bottomBar)
             
             ToolbarItem(placement: .bottomBar) {
-                Button("Stop", systemImage: stopButtonSymbolName) {
+                Button {
                     withAnimation {
                         try! model.endSeriesReset()
+                    }
+                } label: {
+                    if model.state is StoppedWithData {
+                        Label("Reset", systemImage: "eraser")
+                    } else {
+                        Label("End Interval Series", systemImage: "stop.fill")
                     }
                 }
                 .disabled(!model.state.canEndSeriesReset)
