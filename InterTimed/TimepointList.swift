@@ -59,6 +59,17 @@ struct TimepointList: View {
                 }
                 .disabled(!model.state.canEndSeriesReset)
             }
+            
+            ToolbarSpacer(.fixed, placement: .bottomBar)
+            
+            ToolbarItem(placement: .bottomBar) {
+                Button("Swap Interval Type", systemImage: "rectangle.2.swap") {
+                    withAnimation {
+                        try! model.swapIntervalType()
+                    }
+                }
+                .disabled(!model.state.canSwapIntervalType)
+            }
         }
     }
 }

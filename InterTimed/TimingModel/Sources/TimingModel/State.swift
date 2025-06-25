@@ -11,16 +11,20 @@ public protocol IntervalState: Equatable {
     var canDepart: Bool { get }
     var canArriveAtStop: Bool { get }
     var canEndSeriesReset: Bool { get }
+    var canSwapIntervalType: Bool { get }
+    
     func depart(model: IntervalSeriesModel) throws
     func arriveAtStop(model: IntervalSeriesModel) throws
     func endSeriesReset(model: IntervalSeriesModel) throws
+    func swapIntervalType(model: IntervalSeriesModel) throws
 }
 
 public struct Ready: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = true
     public let canEndSeriesReset = false
-    
+    public let canSwapIntervalType = false
+
     public func depart(model: IntervalSeriesModel) {
         let start = Date()
         let origin = Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
@@ -44,13 +48,18 @@ public struct Ready: IntervalState {
     public func endSeriesReset(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")
     }
+    
+    public func swapIntervalType(model: IntervalSeriesModel) throws {
+        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot swap interval type when not in state reflecting timing of interval.")
+    }
 }
 
 public struct TimingTravel: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = true
     public let canEndSeriesReset = true
-    
+    public let canSwapIntervalType = true
+
     public func depart(model: IntervalSeriesModel) {
         let departureTime = Date()
         
@@ -76,6 +85,16 @@ public struct TimingTravel: IntervalState {
         
         model.state = StoppedWithData()
     }
+    
+    public func swapIntervalType(model: IntervalSeriesModel) throws {
+        model.timepoints.removeLast()
+        
+        let arrivalTime = model.timepoints.last!.temporality.arrivalTime!
+        
+        model.timepoints.last!.temporality = .awaitingDeparture(afterArrival: arrivalTime)
+        
+        model.state = TimingDwell(arrivalTime: arrivalTime)
+    }
 }
 
 public struct TimingDwell: IntervalState {
@@ -84,6 +103,7 @@ public struct TimingDwell: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = false
     public let canEndSeriesReset = true
+    public let canSwapIntervalType = true
 
     private func endDwell(for model: IntervalSeriesModel) {
         let departureTime = Date()
@@ -111,13 +131,22 @@ public struct TimingDwell: IntervalState {
         model.state = StoppedWithData()
     }
     
-    
+    public func swapIntervalType(model: IntervalSeriesModel) throws {
+        let arrivalDepartureTime = model.timepoints.last!.temporality.arrivalTime!
+        
+        model.timepoints.last!.temporality = .instant(passingAt: arrivalDepartureTime)
+        
+        model.timepoints.append(Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .awaitingArrival))
+        
+        model.state = TimingTravel()
+    }
 }
 
 public struct StoppedWithData: IntervalState {
     public let canDepart = false
     public let canArriveAtStop = false
     public let canEndSeriesReset = true
+    public let canSwapIntervalType = false
     
     public func depart(model: IntervalSeriesModel) throws {
         throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
@@ -130,5 +159,9 @@ public struct StoppedWithData: IntervalState {
     public func endSeriesReset(model: IntervalSeriesModel) {
         model.timepoints.removeAll()
         model.state = Ready()
+    }
+    
+    public func swapIntervalType(model: IntervalSeriesModel) throws {
+        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot swap interval type while stopped.")
     }
 }

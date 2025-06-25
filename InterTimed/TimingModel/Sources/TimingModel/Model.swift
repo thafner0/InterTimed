@@ -25,6 +25,10 @@ public class IntervalSeriesModel {
         try state.endSeriesReset(model: self)
     }
     
+    public func swapIntervalType() throws {
+        try state.swapIntervalType(model: self)
+    }
+    
     nonisolated public enum ModelError: Error, Equatable {
         case invalidStateTransition(reason: String)
     }
