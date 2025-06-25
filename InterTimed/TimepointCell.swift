@@ -14,7 +14,10 @@ struct TimepointCell: View {
     
     var body: some View {
         HStack {
-            TextField("Station, Point of Interest, Landmark, etc", text: $timepoint.name)
+            TextField("Station, Landmark, etc", text: $timepoint.name)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.words)
+                .scrollDismissesKeyboard(.interactively)
             Spacer()
             switch timepoint.temporality {
             case .instant(passingAt: _):
