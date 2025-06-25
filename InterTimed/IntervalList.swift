@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TimingModel
 
 struct IntervalList: View {
     @State var model = IntervalSeriesModel()

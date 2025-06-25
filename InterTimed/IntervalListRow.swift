@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TimingModel
 
 struct IntervalListRow: View {
     let interval: Interval

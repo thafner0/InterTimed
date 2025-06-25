@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		94961EE12DFFB9290018C1F9 /* RealModule in Frameworks */ = {isa = PBXBuildFile; productRef = 94961EE02DFFB9290018C1F9 /* RealModule */; };
+		94ABCF1B2E08FCF200BCB3FE /* TimingModel in Frameworks */ = {isa = PBXBuildFile; productRef = 94ABCF1A2E08FCF200BCB3FE /* TimingModel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94ABCF1B2E08FCF200BCB3FE /* TimingModel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,7 +64,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94961EE12DFFB9290018C1F9 /* RealModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +83,7 @@
 				9422C9062DFBECF9000EF9CF /* InterTimed */,
 				9422C9142DFBECFB000EF9CF /* InterTimedTests */,
 				9422C91E2DFBECFB000EF9CF /* InterTimedUITests */,
+				94ABCF192E08FCF200BCB3FE /* Frameworks */,
 				9422C9052DFBECF9000EF9CF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -95,6 +96,13 @@
 				9422C91B2DFBECFB000EF9CF /* InterTimedUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		94ABCF192E08FCF200BCB3FE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -117,6 +125,7 @@
 			);
 			name = InterTimed;
 			packageProductDependencies = (
+				94ABCF1A2E08FCF200BCB3FE /* TimingModel */,
 			);
 			productName = InterTimed;
 			productReference = 9422C9042DFBECF9000EF9CF /* InterTimed.app */;
@@ -140,7 +149,6 @@
 			);
 			name = InterTimedTests;
 			packageProductDependencies = (
-				94961EE02DFFB9290018C1F9 /* RealModule */,
 			);
 			productName = InterTimedTests;
 			productReference = 9422C9112DFBECFB000EF9CF /* InterTimedTests.xctest */;
@@ -202,7 +210,6 @@
 			mainGroup = 9422C8FB2DFBECF9000EF9CF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				94961EDF2DFFB9290018C1F9 /* XCRemoteSwiftPackageReference "swift-numerics" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9422C9052DFBECF9000EF9CF /* Products */;
@@ -582,22 +589,10 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		94961EDF2DFFB9290018C1F9 /* XCRemoteSwiftPackageReference "swift-numerics" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-numerics.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		94961EE02DFFB9290018C1F9 /* RealModule */ = {
+		94ABCF1A2E08FCF200BCB3FE /* TimingModel */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 94961EDF2DFFB9290018C1F9 /* XCRemoteSwiftPackageReference "swift-numerics" */;
-			productName = RealModule;
+			productName = TimingModel;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
