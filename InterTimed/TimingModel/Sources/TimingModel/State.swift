@@ -40,7 +40,7 @@ public struct Ready: IntervalState {
 
     public func depart(model: IntervalSeriesModel) {
         let start = Date()
-        let origin = Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
+        let origin = Timepoint(name: "Location1", temporality: .instant(passingAt: start))
         model.timepoints.append(origin)
         
         model.state = TimingLeg(model: model)
@@ -49,7 +49,7 @@ public struct Ready: IntervalState {
     public func arriveAtStop(model: IntervalSeriesModel) {
         let start = Date()
         
-        let origin = Timepoint(name: "Location 1", temporality: .awaitingDeparture(afterArrival: start))
+        let origin = Timepoint(name: "Location1", temporality: .awaitingDeparture(afterArrival: start))
         model.timepoints.append(origin)
         
         model.state = TimingDwell(arrivalTime: start)
@@ -150,7 +150,7 @@ public struct TimingLeg: IntervalState {
     }
     
     init(model: IntervalSeriesModel) {
-        let next = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .awaitingArrival)
+        let next = Timepoint(name: "Location\(model.timepoints.count + 1)", temporality: .awaitingArrival)
         model.timepoints.append(next)
     }
     
