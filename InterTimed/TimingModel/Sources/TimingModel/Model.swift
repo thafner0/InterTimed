@@ -33,5 +33,9 @@ public class IntervalSeriesModel {
         try state.resetCurrentIntervalStart(model: self)
     }
     
+    public func undoPreviousAction() throws {
+        try state.undoPreviousAction(model: self)
+    }
+    
     public init() {}
 }

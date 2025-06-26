@@ -73,6 +73,13 @@ struct TimepointList: View {
                         }
                     }
                     .disabled(!model.state.isTiming)
+                    
+                    Button("Undo Previous Action", systemImage: "arrow.uturn.backward") {
+                        withAnimation {
+                            try! model.undoPreviousAction()
+                        }
+                    }
+                    .disabled(!model.state.canUndo)
                 }
             }
         }
