@@ -23,7 +23,7 @@ import RealModule
             #expect(model.timepoints ~== [
                 Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
             ])
-            try model.stateEqual(to: TimingTravel())
+            try model.stateEqual(to: TimingLeg())
         }
         
         @Test func startSeriesWithDwellInterval() async throws {
@@ -52,7 +52,7 @@ import RealModule
             #expect(model.timepoints ~== [
                 Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
             ])
-            try model.stateEqual(to: TimingTravel())
+            try model.stateEqual(to: TimingLeg())
         }
         
         @Test func changeTravelIntervalsOverInstantTimepoint() async throws {
@@ -63,7 +63,7 @@ import RealModule
             try model.departForNextTimepoint()
             
             #expect(model.timepoints ~== expectedTimepoints)
-            try model.stateEqual(to: TimingTravel())
+            try model.stateEqual(to: TimingLeg())
         }
         
         @Test func collectDwellTime() async throws {
@@ -111,7 +111,7 @@ import RealModule
             try model.departForNextTimepoint()
             
             #expect(model.timepoints ~== expectedTimepoints)
-            try model.stateEqual(to: TimingTravel())
+            try model.stateEqual(to: TimingLeg())
         }
         
         @Test func attemptToCollectAdditionalDwellTime() async throws {
