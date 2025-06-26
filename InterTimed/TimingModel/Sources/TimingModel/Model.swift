@@ -29,9 +29,5 @@ public class IntervalSeriesModel {
         try state.swapIntervalType(model: self)
     }
     
-    nonisolated public enum ModelError: Error, Equatable {
-        case invalidStateTransition(reason: String)
-    }
-    
     public init() {}
 }

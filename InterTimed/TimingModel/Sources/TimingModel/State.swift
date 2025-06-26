@@ -19,6 +19,13 @@ public protocol IntervalState: Equatable {
     func swapIntervalType(model: IntervalSeriesModel) throws
 }
 
+public enum ImproperStateTransition: Error, Equatable {
+    case cannotResetAlreadyResetTimer
+    case cannotSwapTimingIntervalTypeWhileStopped
+    case immediatelySuccessiveDwellsNotPermitted
+    case mustResetTimerBeforeStartingAgain
+}
+
 public struct Ready: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = true
@@ -43,11 +50,11 @@ public struct Ready: IntervalState {
     }
     
     public func endSeriesReset(model: IntervalSeriesModel) throws {
-        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")
+        throw ImproperStateTransition.cannotResetAlreadyResetTimer
     }
     
     public func swapIntervalType(model: IntervalSeriesModel) throws {
-        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot swap interval type when not in state reflecting timing of interval.")
+        throw ImproperStateTransition.cannotSwapTimingIntervalTypeWhileStopped
     }
 }
 
@@ -119,7 +126,7 @@ public struct TimingDwell: IntervalState {
     }
     
     public func arriveAtStop(model: IntervalSeriesModel) throws {
-        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot dwell at two places without traveling between them.")
+        throw ImproperStateTransition.immediatelySuccessiveDwellsNotPermitted
     }
     
     public func endSeriesReset(model: IntervalSeriesModel) {
@@ -144,11 +151,11 @@ public struct StoppedWithData: IntervalState {
     public let canSwapIntervalType = false
     
     public func depart(model: IntervalSeriesModel) throws {
-        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
+        throw ImproperStateTransition.mustResetTimerBeforeStartingAgain
     }
     
     public func arriveAtStop(model: IntervalSeriesModel) throws {
-        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")
+        throw ImproperStateTransition.mustResetTimerBeforeStartingAgain
     }
     
     public func endSeriesReset(model: IntervalSeriesModel) {
@@ -157,6 +164,6 @@ public struct StoppedWithData: IntervalState {
     }
     
     public func swapIntervalType(model: IntervalSeriesModel) throws {
-        throw IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot swap interval type while stopped.")
+        throw ImproperStateTransition.cannotSwapTimingIntervalTypeWhileStopped
     }
 }
