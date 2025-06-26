@@ -29,5 +29,9 @@ public class IntervalSeriesModel {
         try state.swapIntervalType(model: self)
     }
     
+    public func resetCurrentIntervalStart() throws {
+        try state.resetCurrentIntervalStart(model: self)
+    }
+    
     public init() {}
 }

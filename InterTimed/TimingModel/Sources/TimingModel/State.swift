@@ -11,12 +11,13 @@ public protocol IntervalState: Equatable {
     var canDepart: Bool { get }
     var canArriveAtStop: Bool { get }
     var canEndSeriesReset: Bool { get }
-    var canSwapIntervalType: Bool { get }
+    var isTiming: Bool { get }
     
     func depart(model: IntervalSeriesModel) throws
     func arriveAtStop(model: IntervalSeriesModel) throws
     func endSeriesReset(model: IntervalSeriesModel) throws
     func swapIntervalType(model: IntervalSeriesModel) throws
+    func resetCurrentIntervalStart(model: IntervalSeriesModel) throws
 }
 
 public enum ImproperStateTransition: Error, Equatable {
@@ -24,13 +25,14 @@ public enum ImproperStateTransition: Error, Equatable {
     case cannotSwapTimingIntervalTypeWhileStopped
     case immediatelySuccessiveDwellsNotPermitted
     case mustResetTimerBeforeStartingAgain
+    case cannotResetCurrentIntervalWhileStopped
 }
 
 public struct Ready: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = true
     public let canEndSeriesReset = false
-    public let canSwapIntervalType = false
+    public let isTiming = false
 
     public func depart(model: IntervalSeriesModel) {
         let start = Date()
@@ -56,13 +58,17 @@ public struct Ready: IntervalState {
     public func swapIntervalType(model: IntervalSeriesModel) throws {
         throw ImproperStateTransition.cannotSwapTimingIntervalTypeWhileStopped
     }
+    
+    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+        throw ImproperStateTransition.cannotResetCurrentIntervalWhileStopped
+    }
 }
 
 public struct TimingLeg: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = true
     public let canEndSeriesReset = true
-    public let canSwapIntervalType = true
+    public let isTiming = true
 
     public func depart(model: IntervalSeriesModel) {
         let departureTime = Date()
@@ -98,6 +104,21 @@ public struct TimingLeg: IntervalState {
         model.state = TimingDwell(arrivalTime: arrivalTime)
     }
     
+    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+        let newDepartureTime = Date()
+        
+        let departurePoint = model.timepoints[model.timepoints.count - 2]
+        
+        switch departurePoint.temporality {
+        case .instant(passingAt: _):
+            departurePoint.temporality = .instant(passingAt: newDepartureTime)
+        case .prolonged(arrival: let arrival, departure: _):
+            departurePoint.temporality = .prolonged(arrival: arrival, departure: newDepartureTime)
+        default:
+            fatalError("Inconsistent state: must have departure timepoint before last.")
+        }
+    }
+    
     init(model: IntervalSeriesModel) {
         let next = Timepoint(name: "Location \(model.timepoints.count + 1)", temporality: .awaitingArrival)
         model.timepoints.append(next)
@@ -110,7 +131,7 @@ public struct TimingDwell: IntervalState {
     public let canDepart = true
     public let canArriveAtStop = false
     public let canEndSeriesReset = true
-    public let canSwapIntervalType = true
+    public let isTiming = true
 
     private func endDwell(for model: IntervalSeriesModel) {
         let departureTime = Date()
@@ -142,13 +163,20 @@ public struct TimingDwell: IntervalState {
         
         model.state = TimingLeg(model: model)
     }
+    
+    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+        let newArrival = Date()
+        
+        model.timepoints.last!.temporality = .awaitingDeparture(afterArrival: newArrival)
+        model.state = TimingDwell(arrivalTime: newArrival)
+    }
 }
 
 public struct StoppedWithData: IntervalState {
     public let canDepart = false
     public let canArriveAtStop = false
     public let canEndSeriesReset = true
-    public let canSwapIntervalType = false
+    public let isTiming = false
     
     public func depart(model: IntervalSeriesModel) throws {
         throw ImproperStateTransition.mustResetTimerBeforeStartingAgain
@@ -165,5 +193,9 @@ public struct StoppedWithData: IntervalState {
     
     public func swapIntervalType(model: IntervalSeriesModel) throws {
         throw ImproperStateTransition.cannotSwapTimingIntervalTypeWhileStopped
+    }
+    
+    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+        throw ImproperStateTransition.cannotResetCurrentIntervalWhileStopped
     }
 }

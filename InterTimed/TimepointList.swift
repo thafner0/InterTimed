@@ -65,7 +65,14 @@ struct TimepointList: View {
                             try! model.swapIntervalType()
                         }
                     }
-                    .disabled(!model.state.canSwapIntervalType)
+                    .disabled(!model.state.isTiming)
+                    
+                    Button("Restart Current Interval", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90") {
+                        withAnimation {
+                            try! model.resetCurrentIntervalStart()
+                        }
+                    }
+                    .disabled(!model.state.isTiming)
                 }
             }
         }
