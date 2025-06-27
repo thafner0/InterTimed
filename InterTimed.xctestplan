@@ -1,0 +1,45 @@
+{
+  "configurations" : [
+    {
+      "id" : "E4B91D38-FED8-437F-9664-D83604B86E8B",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:InterTimed.xcodeproj",
+      "identifier" : "9422C9032DFBECF9000EF9CF",
+      "name" : "InterTimed"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:InterTimed.xcodeproj",
+        "identifier" : "9422C9102DFBECFB000EF9CF",
+        "name" : "InterTimedTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:InterTimed.xcodeproj",
+        "identifier" : "9422C91A2DFBECFB000EF9CF",
+        "name" : "InterTimedUITests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:InterTimed\/TimingModel",
+        "identifier" : "TimingModelTests",
+        "name" : "TimingModelTests"
+      }
+    }
+  ],
+  "version" : 1
+}

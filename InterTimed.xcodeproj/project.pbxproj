@@ -31,6 +31,7 @@
 		9422C9042DFBECF9000EF9CF /* InterTimed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InterTimed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9422C9112DFBECFB000EF9CF /* InterTimedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InterTimedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9422C91B2DFBECFB000EF9CF /* InterTimedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InterTimedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		94E928452E0E3E76006C694F /* InterTimed.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = InterTimed.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +81,7 @@
 		9422C8FB2DFBECF9000EF9CF = {
 			isa = PBXGroup;
 			children = (
+				94E928452E0E3E76006C694F /* InterTimed.xctestplan */,
 				9422C9062DFBECF9000EF9CF /* InterTimed */,
 				9422C9142DFBECFB000EF9CF /* InterTimedTests */,
 				9422C91E2DFBECFB000EF9CF /* InterTimedUITests */,
