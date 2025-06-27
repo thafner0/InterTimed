@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol IntervalState: Equatable {
+public protocol IntervalState: Equatable, CustomStringConvertible {
     var canDepart: Bool { get }
     var canArriveAtStop: Bool { get }
     var canEndSeriesReset: Bool { get }

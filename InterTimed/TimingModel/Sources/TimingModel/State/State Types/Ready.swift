@@ -46,4 +46,8 @@ public struct Ready: IntervalState {
     public func undoPreviousAction(model: IntervalSeries) throws {
         throw ImproperStateTransition.nothingToUndo
     }
+    
+    public var description: String {
+        "Ready"
+    }
 }

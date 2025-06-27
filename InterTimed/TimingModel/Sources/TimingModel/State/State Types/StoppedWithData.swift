@@ -49,4 +49,8 @@ public struct StoppedWithData: IntervalState {
             fatalError("Inconsistent state: all intervals must be complete when in stopped state.")
         }
     }
+    
+    public var description: String {
+        "Stopped With Data"
+    }
 }

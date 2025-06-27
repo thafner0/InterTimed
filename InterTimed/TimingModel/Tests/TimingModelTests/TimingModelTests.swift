@@ -191,7 +191,7 @@ extension Collection where Element == Timepoint {
         let zipped = zip(lhs, rhs)
         
         for (left, right) in zipped {
-            guard left.name == right.name else { return false }
+            guard left.locationDescription == right.locationDescription else { return false }
             guard left.temporality ~== right.temporality else { return false }
         }
         

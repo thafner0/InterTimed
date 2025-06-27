@@ -8,18 +8,18 @@
 import Foundation
 
 @Observable
-public class Timepoint: Equatable, Identifiable {
-    public var name: String
+public class Timepoint: Equatable, Identifiable, CustomStringConvertible {
+    public var locationDescription: String
     public internal(set) var temporality: Temporality
     public var id = UUID()
     
     init(name: String, temporality: Temporality) {
-        self.name = name
+        self.locationDescription = name
         self.temporality = temporality
     }
     
     public static func ==(lhs: Timepoint, rhs: Timepoint) -> Bool {
-        return lhs.name == rhs.name && lhs.temporality == rhs.temporality
+        return lhs.locationDescription == rhs.locationDescription && lhs.temporality == rhs.temporality
     }
     
     public static var random: Timepoint {
@@ -59,6 +59,23 @@ public class Timepoint: Equatable, Identifiable {
             case .awaitingArrival, .awaitingDeparture(afterArrival: _), .end(arrivalTime: _):
                 return nil
             }
+        }
+    }
+    
+    public var description: String {
+        switch temporality {
+        case .start(let departureTime):
+            return "Started at \(locationDescription), departing at \(departureTime)"
+        case .pass(let passTime):
+            return "Passed \(locationDescription) at \(passTime)"
+        case .prolonged(let arrival, let departure):
+            return "Served \(locationDescription), arriving at \(arrival) and departing at \(departure)"
+        case .awaitingArrival:
+            return "Awaiting arrival at \(locationDescription)"
+        case .awaitingDeparture(let arrival):
+            return "Arrived at \(locationDescription) at \(arrival); awaiting departure"
+        case .end(let arrivalTime):
+            return "Ended at \(locationDescription), arriving at \(arrivalTime)"
         }
     }
 }

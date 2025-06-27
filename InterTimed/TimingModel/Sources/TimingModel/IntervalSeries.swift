@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-public class IntervalSeries {
+public class IntervalSeries: CustomStringConvertible {
     public internal(set) var timepoints: [Timepoint] = []
     
     public internal(set) var state: any IntervalState = Ready()
@@ -38,4 +38,11 @@ public class IntervalSeries {
     }
     
     public init() {}
+    
+    public var description: String {
+        guard !timepoints.isEmpty else {
+            return "Empty Interval Series, current state is \(state)"
+        }
+        return "Interval Series with a total of \(timepoints.count) timepoints from \(timepoints.first!.locationDescription) to \(timepoints.last!.locationDescription), current state is \(state)"
+    }
 }

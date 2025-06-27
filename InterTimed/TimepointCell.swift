@@ -14,7 +14,7 @@ struct TimepointCell: View {
     
     var body: some View {
         HStack {
-            TextField("Station, Landmark, etc", text: $timepoint.name)
+            TextField("Station, Landmark, etc", text: $timepoint.locationDescription)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.words)
                 .scrollDismissesKeyboard(.interactively)

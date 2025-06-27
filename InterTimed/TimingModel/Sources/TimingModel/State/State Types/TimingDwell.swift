@@ -69,4 +69,8 @@ public struct TimingDwell: IntervalState {
             model.state = Ready()
         }
     }
+    
+    public var description: String {
+        "Timing Dwell starting at \(arrivalTime)"
+    }
 }

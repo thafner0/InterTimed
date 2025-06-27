@@ -92,4 +92,8 @@ public struct TimingLeg: IntervalState {
     }
     
     init() {}
+    
+    public var description: String {
+        "Timing Leg"
+    }
 }
