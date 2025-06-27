@@ -14,28 +14,28 @@ public struct StoppedWithData: IntervalState {
     public let isTiming = false
     public let canUndo = true
     
-    public func depart(model: IntervalSeriesModel) throws {
+    public func depart(model: IntervalSeries) throws {
         throw ImproperStateTransition.mustResetTimerBeforeStartingAgain
     }
     
-    public func arriveAtStop(model: IntervalSeriesModel) throws {
+    public func arriveAtStop(model: IntervalSeries) throws {
         throw ImproperStateTransition.mustResetTimerBeforeStartingAgain
     }
     
-    public func endSeriesReset(model: IntervalSeriesModel) {
+    public func endSeriesReset(model: IntervalSeries) {
         model.timepoints.removeAll()
         model.state = Ready()
     }
     
-    public func swapIntervalType(model: IntervalSeriesModel) throws {
+    public func swapIntervalType(model: IntervalSeries) throws {
         throw ImproperStateTransition.cannotSwapTimingIntervalTypeWhileStopped
     }
     
-    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+    public func resetCurrentIntervalStart(model: IntervalSeries) throws {
         throw ImproperStateTransition.cannotResetCurrentIntervalWhileStopped
     }
     
-    public func undoPreviousAction(model: IntervalSeriesModel) throws {
+    public func undoPreviousAction(model: IntervalSeries) throws {
         switch model.timepoints.last!.temporality {
         case .end(arrivalTime: _):
             // previous interval was leg

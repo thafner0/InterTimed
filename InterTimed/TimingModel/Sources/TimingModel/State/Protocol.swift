@@ -14,10 +14,10 @@ public protocol IntervalState: Equatable {
     var isTiming: Bool { get }
     var canUndo: Bool { get }
     
-    func depart(model: IntervalSeriesModel) throws
-    func arriveAtStop(model: IntervalSeriesModel) throws
-    func endSeriesReset(model: IntervalSeriesModel) throws
-    func swapIntervalType(model: IntervalSeriesModel) throws
-    func resetCurrentIntervalStart(model: IntervalSeriesModel) throws
-    func undoPreviousAction(model: IntervalSeriesModel) throws
+    func depart(model: IntervalSeries) throws
+    func arriveAtStop(model: IntervalSeries) throws
+    func endSeriesReset(model: IntervalSeries) throws
+    func swapIntervalType(model: IntervalSeries) throws
+    func resetCurrentIntervalStart(model: IntervalSeries) throws
+    func undoPreviousAction(model: IntervalSeries) throws
 }

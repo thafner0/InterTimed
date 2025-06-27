@@ -8,10 +8,10 @@ import RealModule
     
     @MainActor
     @Suite struct FromReadyState {
-        let model: IntervalSeriesModel
+        let model: IntervalSeries
         
         init() throws {
-            self.model = IntervalSeriesModel()
+            self.model = IntervalSeries()
             #expect(model.timepoints == [])
             try model.stateEqual(to: Ready())
         }
@@ -35,17 +35,17 @@ import RealModule
         }
         
         @Test func attemptToEndSeriesBeforeStart() async throws {
-            #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")) {
+            #expect(throws: IntervalSeries.ModelError.invalidStateTransition(reason: "Cannot reset timer that's already reset.")) {
                 try model.endSeriesReset()
             }
         }
     }
     
     @MainActor @Suite struct FromTimingTravelState {
-        let model: IntervalSeriesModel
+        let model: IntervalSeries
         
         init() throws {
-            self.model = IntervalSeriesModel()
+            self.model = IntervalSeries()
             let start = Date()
             try model.departForNextTimepoint()
             
@@ -89,11 +89,11 @@ import RealModule
     }
     
     @MainActor @Suite struct FromTimingDwellState {
-        let model: IntervalSeriesModel
+        let model: IntervalSeries
         let originvalState: TimingDwell
         
         init() throws {
-            self.model = IntervalSeriesModel()
+            self.model = IntervalSeries()
             
             let arrivalTime = Date()
             try model.arriveAtStop()
@@ -115,7 +115,7 @@ import RealModule
         }
         
         @Test func attemptToCollectAdditionalDwellTime() async throws {
-            #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Cannot dwell at two places without traveling between them.")) {
+            #expect(throws: IntervalSeries.ModelError.invalidStateTransition(reason: "Cannot dwell at two places without traveling between them.")) {
                 try model.arriveAtStop()
             }
         }
@@ -133,10 +133,10 @@ import RealModule
     }
     
     @MainActor @Suite struct FromStoppedWithDataState {
-        let model: IntervalSeriesModel
+        let model: IntervalSeries
         
         init() throws {
-            self.model = IntervalSeriesModel()
+            self.model = IntervalSeries()
             
             let departureTime = Date()
             try model.departForNextTimepoint()
@@ -152,13 +152,13 @@ import RealModule
         }
         
         @Test func attemptToTimeAnotherTravel() async throws {
-            #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")) {
+            #expect(throws: IntervalSeries.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")) {
                 try model.departForNextTimepoint()
             }
         }
         
         @Test func attemptToTimeAnotherDwell() async throws {
-            #expect(throws: IntervalSeriesModel.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")) {
+            #expect(throws: IntervalSeries.ModelError.invalidStateTransition(reason: "Must reset timer before starting new series.")) {
                 try model.arriveAtStop()
             }
         }
@@ -173,7 +173,7 @@ import RealModule
 }
 
 @MainActor @Suite struct IntervalCalculationTests {
-    let model = IntervalSeriesModel()
+    let model = IntervalSeries()
     
     @Test func noTimepoints() throws {
         #expect(model.timepoints.isEmpty)
@@ -294,7 +294,7 @@ static func ~==(_ lhs: Date, _ rhs: Date) -> Bool {
 }
 }
 
-extension IntervalSeriesModel {
+extension IntervalSeries {
 func stateEqual<S: IntervalState>(to expected: S) throws {
     let typedState = try #require(self.state as? S)
     if let timingDwellState = typedState as? TimingDwell, let expectedTimingDwellState = expected as? TimingDwell {

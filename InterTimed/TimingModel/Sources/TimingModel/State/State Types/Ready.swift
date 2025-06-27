@@ -14,7 +14,7 @@ public struct Ready: IntervalState {
     public let isTiming = false
     public let canUndo = false
 
-    public func depart(model: IntervalSeriesModel) {
+    public func depart(model: IntervalSeries) {
         let start = Date()
         let origin = Timepoint(name: "Location1", temporality: .start(departureTime: start))
         model.timepoints.append(origin)
@@ -22,7 +22,7 @@ public struct Ready: IntervalState {
         model.state = TimingLeg(model: model)
     }
     
-    public func arriveAtStop(model: IntervalSeriesModel) {
+    public func arriveAtStop(model: IntervalSeries) {
         let start = Date()
         
         let origin = Timepoint(name: "Location1", temporality: .awaitingDeparture(afterArrival: start))
@@ -31,19 +31,19 @@ public struct Ready: IntervalState {
         model.state = TimingDwell(arrivalTime: start)
     }
     
-    public func endSeriesReset(model: IntervalSeriesModel) throws {
+    public func endSeriesReset(model: IntervalSeries) throws {
         throw ImproperStateTransition.cannotResetAlreadyResetTimer
     }
     
-    public func swapIntervalType(model: IntervalSeriesModel) throws {
+    public func swapIntervalType(model: IntervalSeries) throws {
         throw ImproperStateTransition.cannotSwapTimingIntervalTypeWhileStopped
     }
     
-    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+    public func resetCurrentIntervalStart(model: IntervalSeries) throws {
         throw ImproperStateTransition.cannotResetCurrentIntervalWhileStopped
     }
     
-    public func undoPreviousAction(model: IntervalSeriesModel) throws {
+    public func undoPreviousAction(model: IntervalSeries) throws {
         throw ImproperStateTransition.nothingToUndo
     }
 }

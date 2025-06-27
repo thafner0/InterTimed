@@ -9,7 +9,7 @@ import SwiftUI
 import TimingModel
 
 struct TimepointList: View {
-    @State var model = IntervalSeriesModel()
+    @State var model = IntervalSeries()
     
     var body: some View {
         NavigationStack {

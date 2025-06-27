@@ -14,7 +14,7 @@ public struct TimingLeg: IntervalState {
     public let isTiming = true
     public let canUndo = true
 
-    public func depart(model: IntervalSeriesModel) {
+    public func depart(model: IntervalSeries) {
         let departureTime = Date()
         
         model.timepoints[model.timepoints.count - 1].temporality = .pass(at: departureTime)
@@ -22,7 +22,7 @@ public struct TimingLeg: IntervalState {
         model.state = TimingLeg(model: model)
     }
     
-    public func arriveAtStop(model: IntervalSeriesModel) {
+    public func arriveAtStop(model: IntervalSeries) {
         let arrivalTime = Date()
         
         model.timepoints[model.timepoints.count - 1].temporality = .awaitingDeparture(afterArrival: arrivalTime)
@@ -30,7 +30,7 @@ public struct TimingLeg: IntervalState {
         model.state = TimingDwell(arrivalTime: arrivalTime)
     }
     
-    public func endSeriesReset(model: IntervalSeriesModel) {
+    public func endSeriesReset(model: IntervalSeries) {
         let arrivalTime = Date()
         
         model.timepoints[model.timepoints.count - 1].temporality = .end(arrivalTime: arrivalTime)
@@ -38,7 +38,7 @@ public struct TimingLeg: IntervalState {
         model.state = StoppedWithData()
     }
     
-    public func swapIntervalType(model: IntervalSeriesModel) throws {
+    public func swapIntervalType(model: IntervalSeries) throws {
         model.timepoints.removeLast()
         
         // The start of the current leg (ie departure from previous location)
@@ -50,7 +50,7 @@ public struct TimingLeg: IntervalState {
         model.state = TimingDwell(arrivalTime: arrivalTime)
     }
     
-    public func resetCurrentIntervalStart(model: IntervalSeriesModel) throws {
+    public func resetCurrentIntervalStart(model: IntervalSeries) throws {
         let newDepartureTime = Date()
         
         let departurePoint = model.timepoints[model.timepoints.count - 2]
@@ -65,7 +65,7 @@ public struct TimingLeg: IntervalState {
         }
     }
     
-    public func undoPreviousAction(model: IntervalSeriesModel) throws {
+    public func undoPreviousAction(model: IntervalSeries) throws {
         model.timepoints.removeLast()
         let departurePoint = model.timepoints.last!
         
@@ -86,7 +86,7 @@ public struct TimingLeg: IntervalState {
         }
     }
     
-    init(model: IntervalSeriesModel) {
+    init(model: IntervalSeries) {
         let next = Timepoint(name: "Location\(model.timepoints.count + 1)", temporality: .awaitingArrival)
         model.timepoints.append(next)
     }

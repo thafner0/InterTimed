@@ -1,5 +1,5 @@
 //
-//  IntervalSeriesModel.swift
+//  IntervalSeries.swift
 //  TimingModel
 //
 //  Created by Trevor Hafner on 6/15/25.
@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-public class IntervalSeriesModel {
+public class IntervalSeries {
     public internal(set) var timepoints: [Timepoint] = []
     
     public internal(set) var state: any IntervalState = Ready()
