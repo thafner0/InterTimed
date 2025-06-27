@@ -173,7 +173,7 @@ import RealModule
 }
 
 infix operator ~==: ComparisonPrecedence
-extension Array where Element == Timepoint {
+extension Collection where Element == Timepoint {
     static func ~== (lhs: Self, rhs: Self) -> Bool {
         guard lhs.count == rhs.count else {
             return false
