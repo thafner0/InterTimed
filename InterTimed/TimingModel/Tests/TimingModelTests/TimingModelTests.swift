@@ -189,13 +189,28 @@ extension Array where Element == Timepoint {
     }
 }
 
+extension Optional where Wrapped == Date {
+    static func ~==(_ left: Self, _ right: Self) -> Bool {
+        switch (left, right) {
+        case (.none, .none):
+            return true
+        case (.some(let left), .some(let right)):
+            return left ~== right
+        default:
+            return false
+        }
+    }
+}
+
 extension Timepoint.Temporality {
     static func ~==(_ left: Timepoint.Temporality, _ right: Timepoint.Temporality) -> Bool {
+        guard left.arrivalTime ~== right.arrivalTime && left.departureTime ~== right.departureTime else {
+            return false
+        }
+        
         switch (left, right) {
-        case (.pass(at: let leftDate), .pass(at: let rightDate)):
-            return leftDate ~== rightDate
-        case (.prolonged(arrival: let leftArrival, departure: let leftDeparture), .prolonged(arrival: let rightArrival, departure: let rightDeparture)):
-            return leftArrival ~== rightArrival && leftDeparture ~== rightDeparture
+        case (.start(departureTime: _), .start(departureTime: _)), (.pass(at: _), .pass(at: _)), (.prolonged(arrival: _, departure: _), .prolonged(arrival: _, departure: _)), (.awaitingArrival, .awaitingArrival), (.awaitingDeparture(afterArrival: _), .awaitingDeparture(afterArrival: _)), (.end(arrivalTime:), .end(arrivalTime: _)):
+            return true
         default:
             return false
         }
