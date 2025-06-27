@@ -40,7 +40,7 @@ public struct Ready: IntervalState {
 
     public func depart(model: IntervalSeriesModel) {
         let start = Date()
-        let origin = Timepoint(name: "Location1", temporality: .instant(passingAt: start))
+        let origin = Timepoint(name: "Location1", temporality: .start(departureTime: start))
         model.timepoints.append(origin)
         
         model.state = TimingLeg(model: model)
@@ -82,7 +82,7 @@ public struct TimingLeg: IntervalState {
     public func depart(model: IntervalSeriesModel) {
         let departureTime = Date()
         
-        model.timepoints[model.timepoints.count - 1].temporality = .instant(passingAt: departureTime)
+        model.timepoints[model.timepoints.count - 1].temporality = .pass(at: departureTime)
         
         model.state = TimingLeg(model: model)
     }
@@ -98,7 +98,7 @@ public struct TimingLeg: IntervalState {
     public func endSeriesReset(model: IntervalSeriesModel) {
         let arrivalTime = Date()
         
-        model.timepoints[model.timepoints.count - 1].temporality = .instant(passingAt: arrivalTime)
+        model.timepoints[model.timepoints.count - 1].temporality = .end(arrivalTime: arrivalTime)
         
         model.state = StoppedWithData()
     }
@@ -106,7 +106,9 @@ public struct TimingLeg: IntervalState {
     public func swapIntervalType(model: IntervalSeriesModel) throws {
         model.timepoints.removeLast()
         
-        let arrivalTime = model.timepoints.last!.temporality.arrivalTime!
+        // The start of the current leg (ie departure from previous location)
+        // is transformed into the start of new dwell interval (ie arrival at said previous location)
+        let arrivalTime = model.timepoints.last!.temporality.departureTime!
         
         model.timepoints.last!.temporality = .awaitingDeparture(afterArrival: arrivalTime)
         
@@ -119,8 +121,8 @@ public struct TimingLeg: IntervalState {
         let departurePoint = model.timepoints[model.timepoints.count - 2]
         
         switch departurePoint.temporality {
-        case .instant(passingAt: _):
-            departurePoint.temporality = .instant(passingAt: newDepartureTime)
+        case .pass(at: _), .start(departureTime: _):
+            departurePoint.temporality = .pass(at: newDepartureTime)
         case .prolonged(arrival: let arrival, departure: _):
             departurePoint.temporality = .prolonged(arrival: arrival, departure: newDepartureTime)
         default:
@@ -137,11 +139,11 @@ public struct TimingLeg: IntervalState {
             // previous interval was a dwell time
             model.timepoints.last!.temporality = .awaitingDeparture(afterArrival: arrival)
             model.state = TimingDwell(arrivalTime: arrival)
-        case .instant(passingAt: _) where model.timepoints.count == 1:
+        case .start(departureTime: _):
             // this is first interval
             model.timepoints.removeAll()
             model.state = Ready()
-        case .instant(passingAt: _):
+        case .pass(at: _):
             // previous interval was a leg
             model.timepoints.last!.temporality = .awaitingArrival
         default:
@@ -192,7 +194,11 @@ public struct TimingDwell: IntervalState {
     public func swapIntervalType(model: IntervalSeriesModel) throws {
         let arrivalDepartureTime = model.timepoints.last!.temporality.arrivalTime!
         
-        model.timepoints.last!.temporality = .instant(passingAt: arrivalDepartureTime)
+        if model.timepoints.count > 1 {
+            model.timepoints.last!.temporality = .pass(at: arrivalDepartureTime)
+        } else {
+            model.timepoints.last!.temporality = .start(departureTime: arrivalDepartureTime)
+        }
         
         model.state = TimingLeg(model: model)
     }
@@ -247,7 +253,7 @@ public struct StoppedWithData: IntervalState {
     
     public func undoPreviousAction(model: IntervalSeriesModel) throws {
         switch model.timepoints.last!.temporality {
-        case .instant(passingAt: _):
+        case .end(arrivalTime: _):
             // previous interval was leg
             model.timepoints.last!.temporality = .awaitingArrival
             model.state = TimingLeg()

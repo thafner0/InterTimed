@@ -21,7 +21,7 @@ import RealModule
             try model.departForNextTimepoint()
             
             #expect(model.timepoints ~== [
-                Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
+                Timepoint(name: "Location 1", temporality: .pass(at: start))
             ])
             try model.stateEqual(to: TimingLeg())
         }
@@ -50,7 +50,7 @@ import RealModule
             try model.departForNextTimepoint()
             
             #expect(model.timepoints ~== [
-                Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
+                Timepoint(name: "Location 1", temporality: .pass(at: start))
             ])
             try model.stateEqual(to: TimingLeg())
         }
@@ -58,7 +58,7 @@ import RealModule
         @Test func changeTravelIntervalsOverInstantTimepoint() async throws {
             let passMoment = Date()
             let expectedTimepoints = model.timepoints + [
-                Timepoint(name: "Location 2", temporality: .instant(passingAt: passMoment))
+                Timepoint(name: "Location 2", temporality: .pass(at: passMoment))
             ]
             try model.departForNextTimepoint()
             
@@ -78,7 +78,7 @@ import RealModule
         @Test func endSeries() async throws {
             let arrivalTime = Date()
             let expectedTimepoints = model.timepoints + [
-                Timepoint(name: "Location 2", temporality: .instant(passingAt: arrivalTime))
+                Timepoint(name: "Location 2", temporality: .pass(at: arrivalTime))
             ]
             try model.endSeriesReset()
             
@@ -145,8 +145,8 @@ import RealModule
             try model.endSeriesReset()
             
             #expect(model.timepoints ~== [
-                Timepoint(name: "Location 1", temporality: .instant(passingAt: departureTime)),
-                Timepoint(name: "Location 2", temporality: .instant(passingAt: arrivalTime))
+                Timepoint(name: "Location 1", temporality: .pass(at: departureTime)),
+                Timepoint(name: "Location 2", temporality: .pass(at: arrivalTime))
             ])
             try model.stateEqual(to: StoppedWithData())
         }
@@ -184,7 +184,7 @@ import RealModule
         let start = Date()
         try model.departForNextTimepoint()
         #expect(model.timepoints ~== [
-            Timepoint(name: "Location 1", temporality: .instant(passingAt: start))
+            Timepoint(name: "Location 1", temporality: .pass(at: start))
         ])
         #expect(model.intervals == [
             Interval(type: .dwell(duration: nil, locationName: "Location 1"), id: 0)
@@ -226,9 +226,9 @@ import RealModule
         try model.endSeriesReset()
         
         #expect(model.timepoints ~== [
-            Timepoint(name: "Location 1", temporality: .instant(passingAt: departFirst)),
+            Timepoint(name: "Location 1", temporality: .pass(at: departFirst)),
             Timepoint(name: "Location 2", temporality: .prolonged(arrival: arriveSecond, departure: departSecond)),
-            Timepoint(name: "Location 3", temporality: .instant(passingAt: arriveDepartThird)),
+            Timepoint(name: "Location 3", temporality: .pass(at: arriveDepartThird)),
             Timepoint(name: "Location 4", temporality: .prolonged(arrival: arriveFourth, departure: end))
         ])
         #expect(model.intervals ~== [
@@ -278,7 +278,7 @@ static func ~== (lhs: Self, rhs: Self) -> Bool {
 extension Temporality {
 static func ~==(_ left: Temporality, _ right: Temporality) -> Bool {
     switch (left, right) {
-    case (.instant(passingAt: let leftDate), .instant(passingAt: let rightDate)):
+    case (.pass(passingAt: let leftDate), .pass(passingAt: let rightDate)):
         return leftDate ~== rightDate
     case (.prolonged(arrival: let leftArrival, departure: let leftDeparture), .prolonged(arrival: let rightArrival, departure: let rightDeparture)):
         return leftArrival ~== rightArrival && leftDeparture ~== rightDeparture

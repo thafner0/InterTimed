@@ -29,7 +29,7 @@ public class Timepoint: Equatable, Identifiable {
         case true:
             temporality = .prolonged(arrival: Date().addingTimeInterval(-TimeInterval.random(in: 10...60)), departure: Date().addingTimeInterval(TimeInterval.random(in: 10...60)))
         case false:
-            temporality = .instant(passingAt: Date().addingTimeInterval(TimeInterval.random(in: -60...60)))
+            temporality = .pass(at: Date().addingTimeInterval(TimeInterval.random(in: -60...60)))
         }
         
         return Timepoint(name: "Random", temporality: temporality)
@@ -43,8 +43,8 @@ public struct Leg: Equatable, Identifiable {
     public var id: UUID { start.id }
     
     public static var random: Leg {
-        let start = Timepoint(name: "Start", temporality: .instant(passingAt: Date()))
-        let end = Timepoint(name: "End", temporality: .instant(passingAt: Date().addingTimeInterval(.random(in: 60...6000))))
+        let start = Timepoint(name: "Start", temporality: .pass(at: Date()))
+        let end = Timepoint(name: "End", temporality: .pass(at: Date().addingTimeInterval(.random(in: 60...6000))))
         return Leg(start: start, end: end)
     }
 }
@@ -63,25 +63,27 @@ public extension Array where Element == Timepoint {
 }
 
 public enum Temporality: Equatable {
-    case instant(passingAt: Date)
+    case start(departureTime: Date)
+    case pass(at: Date)
     case prolonged(arrival: Date, departure: Date)
     case awaitingArrival
     case awaitingDeparture(afterArrival: Date)
+    case end(arrivalTime: Date)
     
     public var arrivalTime: Date? {
         switch self {
-        case .instant(passingAt: let arrival), .prolonged(arrival: let arrival, departure: _), .awaitingDeparture(afterArrival: let arrival):
+        case .pass(at: let arrival), .prolonged(arrival: let arrival, departure: _), .awaitingDeparture(afterArrival: let arrival), .end(arrivalTime: let arrival):
             return arrival
-        case .awaitingArrival:
+        case .awaitingArrival, .start(departureTime: _):
             return nil
         }
     }
     
     public var departureTime: Date? {
         switch self {
-        case .instant(passingAt: let departure), .prolonged(arrival: _, departure: let departure):
+        case .pass(at: let departure), .prolonged(arrival: _, departure: let departure), .start(departureTime: let departure):
             return departure
-        case .awaitingArrival, .awaitingDeparture(afterArrival: _):
+        case .awaitingArrival, .awaitingDeparture(afterArrival: _), .end(arrivalTime: _):
             return nil
         }
     }

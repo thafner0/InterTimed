@@ -20,8 +20,14 @@ struct TimepointCell: View {
                 .scrollDismissesKeyboard(.interactively)
             Spacer()
             switch timepoint.temporality {
-            case .instant(passingAt: _):
-                Text("Skipped")
+            case .start(departureTime: _):
+                Text("Start")
+                    .italic()
+            case .end(arrivalTime: _):
+                Text("End")
+                    .italic()
+            case .pass(at: _):
+                Text("Pass")
                     .italic()
             case .prolonged(arrival: let arrival, departure: let departure):
                 Text(departure, format: .stopwatch(startingAt: arrival))
