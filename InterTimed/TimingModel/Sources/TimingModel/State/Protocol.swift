@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+let log = Logger(subsystem: "com.TrevorHafner.InterTimed", category: "State Management")
 
 public protocol IntervalState: Equatable, CustomStringConvertible {
     var canDepart: Bool { get }

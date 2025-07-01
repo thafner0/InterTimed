@@ -35,7 +35,7 @@ public class Timepoint: Equatable, Identifiable, CustomStringConvertible {
         return Timepoint(name: "Random", temporality: temporality)
     }
     
-    public enum Temporality: Equatable {
+    public enum Temporality: Equatable, CustomStringConvertible {
         case start(departureTime: Date)
         case pass(at: Date)
         case prolonged(arrival: Date, departure: Date)
@@ -58,6 +58,23 @@ public class Timepoint: Equatable, Identifiable, CustomStringConvertible {
                 return departure
             case .awaitingArrival, .awaitingDeparture(afterArrival: _), .end(arrivalTime: _):
                 return nil
+            }
+        }
+        
+        public var description: String {
+            switch self {
+            case .start(let departureTime):
+                "Started, departed at \(departureTime)"
+            case .pass(let passTime):
+                "Passed at \(passTime)"
+            case .prolonged(let arrival, let departure):
+                "Stopped, arrived at \(arrival) and departed at \(departure)"
+            case .awaitingArrival:
+                "Awaiting arrival"
+            case .awaitingDeparture(let arrivalTime):
+                "Awaiting departure, arrived \(arrivalTime)"
+            case .end(let arrivalTime):
+                "Ended, arrived at \(arrivalTime)"
             }
         }
     }

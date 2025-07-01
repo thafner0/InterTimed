@@ -36,7 +36,7 @@ public struct StoppedWithData: IntervalState {
     }
     
     public func undoPreviousAction(model: IntervalSeries) throws {
-        switch model.timepoints.last!.temporality {
+        switch model.timepoints.last?.temporality {
         case .end(arrivalTime: _):
             // previous interval was leg
             model.timepoints.last!.temporality = .awaitingArrival
@@ -45,8 +45,10 @@ public struct StoppedWithData: IntervalState {
             // previous interval was dwell
             model.timepoints.last!.temporality = .awaitingDeparture(afterArrival: arrival)
             model.state = TimingDwell(arrivalTime: arrival)
-        default:
-            fatalError("Inconsistent state: all intervals must be complete when in stopped state.")
+        case nil:
+            log.fault("Inconsistent state: timer should not be in a Stopped With Data state without any timepoints")
+        case let otherTemporality?:
+            log.fault("Inconsistent state: all intervals must be complete when a stopped state, yet the last timepoint was marked as having a temporality consistent with an incomplete interval: \(otherTemporality)")
         }
     }
     
