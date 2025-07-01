@@ -9,8 +9,6 @@ import SwiftUI
 import TimingModel
 import OSLog
 
-private let log = Logger(subsystem: "User Interface", category: "Timepoint List")
-
 struct TimepointList: View {
     @State var model = IntervalSeries()
     

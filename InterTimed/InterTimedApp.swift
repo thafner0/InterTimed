@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 @main
 struct InterTimedApp: App {
@@ -15,3 +16,5 @@ struct InterTimedApp: App {
         }
     }
 }
+
+let log = Logger(subsystem: "com.TrevorHafner.InterTimed", category: "User Interface")
