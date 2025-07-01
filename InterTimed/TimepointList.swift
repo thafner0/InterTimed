@@ -7,6 +7,9 @@
 
 import SwiftUI
 import TimingModel
+import OSLog
+
+private let log = Logger(subsystem: "User Interface", category: "Timepoint List")
 
 struct TimepointList: View {
     @State var model = IntervalSeries()
@@ -27,14 +30,30 @@ struct TimepointList: View {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
                         withAnimation {
-                            try! model.departForNextTimepoint()
+                            do {
+                                try model.departForNextTimepoint()
+                            } catch {
+                                if let lastTimepoint = model.timepoints.last {
+                                    log.fault("Error when initiating leg from \(lastTimepoint.locationDescription, privacy: .private(mask: .hash)) in the \(model.state.description, privacy: .public) state: \(error, privacy: .public)")
+                                } else {
+                                    log.fault("Error when initiating leg from start location in the \(model.state.description, privacy: .public) state: \(error, privacy: .public)")
+                                }
+                            }
                         }
                     }
                     .disabled(!model.state.canDepart)
                     
                     Button("Stop", systemImage: "point.topright.arrow.triangle.backward.to.point.bottomleft.filled.scurvepath") {
                         withAnimation {
-                            try! model.arriveAtStop()
+                            do {
+                                try model.arriveAtStop()
+                            } catch {
+                                if let lastTimepoint = model.timepoints.last {
+                                    log.fault("Error when initiating dwell at \(lastTimepoint.locationDescription, privacy: .private(mask: .hash)) in the \(model.state.description, privacy: .public) state: \(error, privacy: .public)")
+                                } else {
+                                    log.fault("Error when initiating dwell at start location in the \(model.state.description, privacy: .public) state: \(error, privacy: .public)")
+                                }
+                            }
                         }
                     }
                     .disabled(!model.state.canArriveAtStop)
@@ -45,7 +64,11 @@ struct TimepointList: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         withAnimation {
-                            try! model.endSeriesReset()
+                            do {
+                                try model.endSeriesReset()
+                            } catch {
+                                log.fault("Error when stopping/resetting series in the \(model.state.description, privacy: .public) state: \(error)")
+                            }
                         }
                     } label: {
                         if model.state is StoppedWithData {
@@ -62,21 +85,45 @@ struct TimepointList: View {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("Swap Interval Type", systemImage: "rectangle.2.swap") {
                         withAnimation {
-                            try! model.swapIntervalType()
+                            do {
+                                try model.swapIntervalType()
+                            } catch {
+                                if let lastTimepoint = model.timepoints.last {
+                                    log.fault("Error when swapping interval type in the \(model.state.description, privacy: .public) state: \(error); (Last timepoint: \(lastTimepoint.locationDescription, privacy: .private(mask: .hash)))")
+                                } else {
+                                    log.fault("Error when swapping interval type in the \(model.state.description, privacy: .public) state: \(error); (no timepoints)")
+                                }
+                            }
                         }
                     }
                     .disabled(!model.state.isTiming)
                     
                     Button("Restart Current Interval", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90") {
                         withAnimation {
-                            try! model.resetCurrentIntervalStart()
+                            do {
+                                try model.resetCurrentIntervalStart()
+                            } catch {
+                                if let lastTimepoint = model.timepoints.last {
+                                    log.fault("Error when restarting current interval in the \(model.state.description, privacy: .public) state: \(error); (Last timepoint: \(lastTimepoint.locationDescription, privacy: .private(mask: .hash)))")
+                                } else {
+                                    log.fault("Error when restarting current interval in the \(model.state.description, privacy: .public) state: \(error); (no timepoints)")
+                                }
+                            }
                         }
                     }
                     .disabled(!model.state.isTiming)
                     
                     Button("Undo Previous Action", systemImage: "arrow.uturn.backward") {
                         withAnimation {
-                            try! model.undoPreviousAction()
+                            do {
+                                try model.undoPreviousAction()
+                            } catch {
+                                if let lastTimepoint = model.timepoints.last {
+                                    log.fault("Error when undoing previous action in the \(model.state.description, privacy: .public) state: \(error); (Last timepoint: \(lastTimepoint.locationDescription, privacy: .private(mask: .hash)))")
+                                } else {
+                                    log.fault("Error when undoing previous action in the \(model.state.description, privacy: .public) state: \(error); (no timepoints)")
+                                }
+                            }
                         }
                     }
                     .disabled(!model.state.canUndo)

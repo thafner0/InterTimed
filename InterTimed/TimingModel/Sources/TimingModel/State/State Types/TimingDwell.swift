@@ -71,6 +71,6 @@ public struct TimingDwell: IntervalState {
     }
     
     public var description: String {
-        "Timing Dwell starting at \(arrivalTime)"
+        "Timing Dwell (starting at \(arrivalTime))"
     }
 }
