@@ -36,14 +36,18 @@ public struct StoppedWithData: IntervalState {
     }
     
     public func undoPreviousAction(model: IntervalSeries) throws {
-        switch model.timepoints.last!.temporality {
+        guard let lastTimepoint = model.timepoints.last else {
+            return
+        }
+        
+        switch lastTimepoint.temporality {
         case .end(arrivalTime: _):
             // previous interval was leg
-            model.timepoints.last!.temporality = .awaitingArrival
+            lastTimepoint.temporality = .awaitingArrival
             model.state = TimingLeg()
         case .prolonged(arrival: let arrival, departure: _):
             // previous interval was dwell
-            model.timepoints.last!.temporality = .awaitingDeparture(afterArrival: arrival)
+            lastTimepoint.temporality = .awaitingDeparture(afterArrival: arrival)
             model.state = TimingDwell(arrivalTime: arrival)
         default:
             fatalError("Inconsistent state: all intervals must be complete when in stopped state.")
