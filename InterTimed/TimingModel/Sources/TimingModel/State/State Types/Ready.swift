@@ -20,6 +20,7 @@ public struct Ready: IntervalState {
         model.timepoints.append(origin)
         
         model.state = TimingLeg(model: model)
+        log.notice("Started interval series without dwell at initial starting location")
     }
     
     public func arriveAtStop(model: IntervalSeries) {
@@ -29,6 +30,8 @@ public struct Ready: IntervalState {
         model.timepoints.append(origin)
         
         model.state = TimingDwell(arrivalTime: start)
+        log.notice("Started interval series with dwell at initial starting location")
+        log.info("Dwell start time at initial starting location marked as \(start, privacy: .public)")
     }
     
     public func endSeriesReset(model: IntervalSeries) throws {
