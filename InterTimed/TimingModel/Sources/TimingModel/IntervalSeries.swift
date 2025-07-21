@@ -11,7 +11,11 @@ import Foundation
 public class IntervalSeries: CustomStringConvertible {
     public internal(set) var timepoints: [Timepoint] = []
     
-    public internal(set) var state: any IntervalState = Ready()
+    public internal(set) var state: any IntervalState = Ready() {
+        didSet {
+            log.notice("Changed state from \(oldValue.description) to \(self.state.description)")
+        }
+    }
     
     public func departForNextTimepoint() throws {
         try state.depart(model: self)
