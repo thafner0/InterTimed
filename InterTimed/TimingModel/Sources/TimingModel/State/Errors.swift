@@ -15,3 +15,8 @@ public enum ImproperStateTransition: Error, Equatable {
     case cannotResetCurrentIntervalWhileStopped
     case nothingToUndo
 }
+
+public enum InconsistentStateError: Error, Equatable {
+    case insufficientNumberOfTimepointsForState(minimumCounnt: Int)
+    case allIntervalsMustBeCompleteForState(noncompliantTemporality: Timepoint.Temporality)
+}
