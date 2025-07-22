@@ -13,7 +13,7 @@ public class IntervalSeries: CustomStringConvertible {
     
     public internal(set) var state: any IntervalState = Ready() {
         didSet {
-            log.notice("Changed state from \(oldValue.description) to \(self.state.description)")
+            log.notice("Changed state from \(oldValue.description, privacy: .public) to \(self.state.description, privacy: .public)")
         }
     }
     
