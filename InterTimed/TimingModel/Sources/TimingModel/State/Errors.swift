@@ -19,4 +19,5 @@ public enum ImproperStateTransition: Error, Equatable {
 public enum InconsistentStateError: Error, Equatable {
     case insufficientNumberOfTimepointsForState(minimumCounnt: Int)
     case allIntervalsMustBeCompleteForState(noncompliantTemporality: Timepoint.Temporality)
+    case unexpectedTemporalityType(temporality: Timepoint.Temporality)
 }
