@@ -9,6 +9,7 @@ import Foundation
 
 public struct TimingDwell: IntervalState {
     public let arrivalTime: Date
+    public let timepointMetadata: TimepointMetadata
     
     public let canDepart = true
     public let canArriveAtStop = false
@@ -18,18 +19,14 @@ public struct TimingDwell: IntervalState {
 
     private func endDwell(for model: IntervalSeries) throws {
         let departureTime = Date()
-        guard let lastTimepoint = model.timepoints.last else {
-            throw InconsistentStateError.insufficientNumberOfTimepointsForState(minimumCounnt: 1)
-        }
         
-        lastTimepoint.temporality = .prolonged(arrival: arrivalTime, departure: departureTime)
-        
+        model.timepoints.append(Timepoint(metadata: timepointMetadata, temporality: .prolonged(arrival: arrivalTime, departure: departureTime)))
     }
     
     public func depart(model: IntervalSeries) throws {
         try endDwell(for: model)
         
-        model.state = TimingLeg(model: model)
+        model.state = TimingLeg(nextTimepointMetadata: TimepointMetadata(locationDescription: "Location\(model.timepoints.count + 1)"))
     }
     
     public func arriveAtStop(model: IntervalSeries) throws {
@@ -43,44 +40,29 @@ public struct TimingDwell: IntervalState {
     }
     
     public func swapIntervalType(model: IntervalSeries) throws {
-        guard let lastTimepoint = model.timepoints.last else {
-            throw InconsistentStateError.insufficientNumberOfTimepointsForState(minimumCounnt: 1)
-        }
-        guard case .awaitingDeparture(afterArrival: let arrivalTime) = lastTimepoint.temporality else {
-            throw InconsistentStateError.unexpectedTemporalityType(temporality: lastTimepoint.temporality)
-        }
-        
-        if model.timepoints.count > 1 {
-            lastTimepoint.temporality = .pass(at: arrivalTime)
+        let temporality: Timepoint.Temporality
+        if !model.timepoints.isEmpty {
+            temporality = .pass(at: arrivalTime)
         } else {
-            lastTimepoint.temporality = .start(departureTime: arrivalTime)
+            temporality = .start(departureTime: arrivalTime)
         }
+        model.timepoints.append(Timepoint(metadata: timepointMetadata, temporality: temporality))
         
-        model.state = TimingLeg(model: model)
+        model.state = TimingLeg(nextTimepointMetadata: TimepointMetadata(locationDescription: "Location\(model.timepoints.count + 1)"))
     }
     
     public func resetCurrentIntervalStart(model: IntervalSeries) throws {
         let newArrival = Date()
-        guard let currentTimepoint = model.timepoints.last else {
-            throw InconsistentStateError.insufficientNumberOfTimepointsForState(minimumCounnt: 1)
-        }
         
-        currentTimepoint.temporality = .awaitingDeparture(afterArrival: newArrival)
-        model.state = TimingDwell(arrivalTime: newArrival)
+        model.state = TimingDwell(arrivalTime: newArrival, timepointMetadata: timepointMetadata)
     }
     
     public func undoPreviousAction(model: IntervalSeries) throws {
-        guard let lastTimepoint = model.timepoints.last else {
-            throw InconsistentStateError.insufficientNumberOfTimepointsForState(minimumCounnt: 1)
-        }
-        
-        if model.timepoints.count > 1 {
+        if !model.timepoints.isEmpty {
             // previous interval was leg
-            lastTimepoint.temporality = .awaitingArrival
-            model.state = TimingLeg()
+            model.state = TimingLeg(nextTimepointMetadata: timepointMetadata)
         } else {
             // this is first interval
-            model.timepoints.removeAll()
             model.state = Ready()
         }
     }

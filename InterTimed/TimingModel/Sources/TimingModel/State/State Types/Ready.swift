@@ -19,16 +19,13 @@ public struct Ready: IntervalState {
         let origin = Timepoint(metadata: TimepointMetadata(locationDescription: "Location1"), temporality: .start(departureTime: start))
         model.timepoints.append(origin)
         
-        model.state = TimingLeg(model: model)
+        model.state = TimingLeg(nextTimepointMetadata: TimepointMetadata(locationDescription: "Location2"))
     }
     
     public func arriveAtStop(model: IntervalSeries) {
         let start = Date()
         
-        let origin = Timepoint(metadata: TimepointMetadata(locationDescription: "Location1"), temporality: .awaitingDeparture(afterArrival: start))
-        model.timepoints.append(origin)
-        
-        model.state = TimingDwell(arrivalTime: start)
+        model.state = TimingDwell(arrivalTime: start, timepointMetadata: TimepointMetadata(locationDescription: "Location1"))
     }
     
     public func endSeriesReset(model: IntervalSeries) throws {

@@ -43,12 +43,14 @@ public struct StoppedWithData: IntervalState {
         switch lastTimepoint.temporality {
         case .end(arrivalTime: _):
             // previous interval was leg
-            lastTimepoint.temporality = .awaitingArrival
-            model.state = TimingLeg()
+            let metadata = lastTimepoint.metadata
+            model.timepoints.removeLast()
+            model.state = TimingLeg(nextTimepointMetadata: metadata)
         case .prolonged(arrival: let arrival, departure: _):
             // previous interval was dwell
-            lastTimepoint.temporality = .awaitingDeparture(afterArrival: arrival)
-            model.state = TimingDwell(arrivalTime: arrival)
+            let metadata = lastTimepoint.metadata
+            model.timepoints.removeLast()
+            model.state = TimingDwell(arrivalTime: arrival, timepointMetadata: metadata)
         case let otherTemporality:
             throw InconsistentStateError.allIntervalsMustBeCompleteForState(noncompliantTemporality: otherTemporality)
         }
