@@ -87,7 +87,7 @@ public struct TimingLeg: IntervalState {
     }
     
     init(model: IntervalSeries) {
-        let next = Timepoint(name: "Location\(model.timepoints.count + 1)", temporality: .awaitingArrival)
+        let next = Timepoint(metadata: TimepointMetadata(locationDescription: "Location\(model.timepoints.count + 1)"), temporality: .awaitingArrival)
         model.timepoints.append(next)
     }
     

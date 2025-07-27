@@ -8,18 +8,19 @@
 import Foundation
 
 @Observable
+@dynamicMemberLookup
 public class Timepoint: Equatable, Identifiable, CustomStringConvertible {
-    public var locationDescription: String
+    public var metadata: TimepointMetadata
     public internal(set) var temporality: Temporality
     public var id = UUID()
     
-    init(name: String, temporality: Temporality) {
-        self.locationDescription = name
+    init(metadata: TimepointMetadata, temporality: Temporality) {
+        self.metadata = metadata
         self.temporality = temporality
     }
     
     public static func ==(lhs: Timepoint, rhs: Timepoint) -> Bool {
-        return lhs.locationDescription == rhs.locationDescription && lhs.temporality == rhs.temporality
+        return lhs.metadata == rhs.metadata && lhs.temporality == rhs.temporality
     }
     
     public static var random: Timepoint {
@@ -32,7 +33,7 @@ public class Timepoint: Equatable, Identifiable, CustomStringConvertible {
             temporality = .pass(at: Date().addingTimeInterval(TimeInterval.random(in: -60...60)))
         }
         
-        return Timepoint(name: "Random", temporality: temporality)
+        return Timepoint(metadata: TimepointMetadata(locationDescription: "Random"), temporality: temporality)
     }
     
     public enum Temporality: Equatable {
@@ -65,17 +66,26 @@ public class Timepoint: Equatable, Identifiable, CustomStringConvertible {
     public var description: String {
         switch temporality {
         case .start(let departureTime):
-            return "Started at \(locationDescription), departing at \(departureTime)"
+            return "Started at \(self.locationDescription), departing at \(departureTime)"
         case .pass(let passTime):
-            return "Passed \(locationDescription) at \(passTime)"
+            return "Passed \(self.locationDescription) at \(passTime)"
         case .prolonged(let arrival, let departure):
-            return "Served \(locationDescription), arriving at \(arrival) and departing at \(departure)"
+            return "Served \(self.locationDescription), arriving at \(arrival) and departing at \(departure)"
         case .awaitingArrival:
-            return "Awaiting arrival at \(locationDescription)"
+            return "Awaiting arrival at \(self.locationDescription)"
         case .awaitingDeparture(let arrival):
-            return "Arrived at \(locationDescription) at \(arrival); awaiting departure"
+            return "Arrived at \(self.locationDescription) at \(arrival); awaiting departure"
         case .end(let arrivalTime):
-            return "Ended at \(locationDescription), arriving at \(arrivalTime)"
+            return "Ended at \(self.locationDescription), arriving at \(arrivalTime)"
+        }
+    }
+    
+    public subscript<T>(dynamicMember member: WritableKeyPath<TimepointMetadata, T>) -> T {
+        get {
+            metadata[keyPath: member]
+        }
+        set {
+            metadata[keyPath: member] = newValue
         }
     }
 }

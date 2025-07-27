@@ -14,8 +14,8 @@ public struct Leg: Equatable, Identifiable, CustomStringConvertible {
     public var id: UUID { start.id }
     
     public static var random: Leg {
-        let start = Timepoint(name: "Start", temporality: .pass(at: Date()))
-        let end = Timepoint(name: "End", temporality: .pass(at: Date().addingTimeInterval(.random(in: 60...6000))))
+        let start = Timepoint(metadata: TimepointMetadata(locationDescription: "Start"), temporality: .pass(at: Date()))
+        let end = Timepoint(metadata: TimepointMetadata(locationDescription: "End"), temporality: .pass(at: Date().addingTimeInterval(.random(in: 60...6000))))
         return Leg(start: start, end: end)
     }
     
