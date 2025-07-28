@@ -11,18 +11,43 @@ import TimingModel
 struct TimepointList: View {
     @State var model = IntervalSeries()
     
+    @ViewBuilder
+    private var totalTimeDescription: some View {
+        if let first = model.timepoints.first {
+            if model.state is StoppedWithData {
+                Text(model.timepoints.last!.temporality.arrivalTime!, format: .stopwatch(startingAt: first.temporality.departureTime!))
+            } else {
+                Text(TimeDataSource<Date>.currentDate, format: .stopwatch(startingAt: first.temporality.departureTime!))
+            }
+        } else {
+            Text("---")
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             List {
-                ForEach(model.timepoints.legs.reversed()) { leg in
-                    TimepointCell(timepoint: leg.end)
-                    LegCell(leg: leg)
+                Section(header: Text("General Statistics")) {
+                    LabeledContent("Total Time") {
+                        totalTimeDescription
+                    }
+                    LabeledContent("Number of Timepoints") {
+                        Text(model.timepoints.count, format: .number)
+                            .contentTransition(.numericText())
+                    }
                 }
-                if let first = model.timepoints.first {
-                    TimepointCell(timepoint: first)
+                
+                Section(header: Text("Individual Intervals")) {
+                    ForEach(model.timepoints.legs.reversed()) { leg in
+                        TimepointCell(timepoint: leg.end)
+                        LegCell(leg: leg)
+                    }
+                    if let first = model.timepoints.first {
+                        TimepointCell(timepoint: first)
+                    }
                 }
             }
-            .navigationTitle("Intervals")
+            .navigationTitle("Interval Series")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("Start", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill") {
