@@ -16,14 +16,15 @@ public struct TimingDwell: IntervalState {
     public let isTiming = true
     public let canUndo = true
 
-    private func endDwell(for model: IntervalSeries) throws {
+    @discardableResult
+    private func endDwell(for model: IntervalSeries) throws -> Date {
         let departureTime = Date()
         guard let lastTimepoint = model.timepoints.last else {
             throw InconsistentStateError.insufficientNumberOfTimepointsForState(minimumCounnt: 1)
         }
         
         lastTimepoint.temporality = .prolonged(arrival: arrivalTime, departure: departureTime)
-        
+        return departureTime
     }
     
     public func depart(model: IntervalSeries) throws {
@@ -37,9 +38,9 @@ public struct TimingDwell: IntervalState {
     }
     
     public func endSeriesReset(model: IntervalSeries) throws {
-        try endDwell(for: model)
+        let departureTime = try endDwell(for: model)
         
-        model.state = StoppedWithData()
+        model.stopSeries(at: departureTime)
     }
     
     public func swapIntervalType(model: IntervalSeries) throws {
@@ -80,8 +81,7 @@ public struct TimingDwell: IntervalState {
             model.state = TimingLeg()
         } else {
             // this is first interval
-            model.timepoints.removeAll()
-            model.state = Ready()
+            model.reset()
         }
     }
     

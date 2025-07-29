@@ -35,7 +35,7 @@ public struct TimingLeg: IntervalState {
         
         model.timepoints[model.timepoints.count - 1].temporality = .end(arrivalTime: arrivalTime)
         
-        model.state = StoppedWithData()
+        model.stopSeries(at: arrivalTime)
     }
     
     public func swapIntervalType(model: IntervalSeries) throws {
@@ -76,8 +76,7 @@ public struct TimingLeg: IntervalState {
             model.state = TimingDwell(arrivalTime: arrival)
         case .start(departureTime: _):
             // this is first interval
-            model.timepoints.removeAll()
-            model.state = Ready()
+            model.reset()
         case .pass(at: _):
             // previous interval was a leg
             model.timepoints.last!.temporality = .awaitingArrival

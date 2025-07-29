@@ -13,6 +13,10 @@ public class IntervalSeries: CustomStringConvertible {
     
     public internal(set) var state: any IntervalState = Ready()
     
+    public internal(set) var startTime: Date? = nil
+    
+    public internal(set) var endTime: Date? = nil
+    
     public func departForNextTimepoint() throws {
         try state.depart(model: self)
     }
@@ -35,6 +39,18 @@ public class IntervalSeries: CustomStringConvertible {
     
     public func undoPreviousAction() throws {
         try state.undoPreviousAction(model: self)
+    }
+    
+    func reset() {
+        self.timepoints.removeAll()
+        self.state = Ready()
+        self.startTime = nil
+        self.endTime = nil
+    }
+    
+    func stopSeries(at endTime: Date) {
+        self.state = StoppedWithData()
+        self.endTime = endTime
     }
     
     public init() {}

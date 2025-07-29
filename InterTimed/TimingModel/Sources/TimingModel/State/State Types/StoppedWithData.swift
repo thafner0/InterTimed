@@ -23,8 +23,7 @@ public struct StoppedWithData: IntervalState {
     }
     
     public func endSeriesReset(model: IntervalSeries) {
-        model.timepoints.removeAll()
-        model.state = Ready()
+        model.reset()
     }
     
     public func swapIntervalType(model: IntervalSeries) throws {
@@ -52,6 +51,7 @@ public struct StoppedWithData: IntervalState {
         case let otherTemporality:
             throw InconsistentStateError.allIntervalsMustBeCompleteForState(noncompliantTemporality: otherTemporality)
         }
+        model.endTime = nil
     }
     
     public var description: String {

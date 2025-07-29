@@ -20,6 +20,7 @@ public struct Ready: IntervalState {
         model.timepoints.append(origin)
         
         model.state = TimingLeg(model: model)
+        model.startTime = start
     }
     
     public func arriveAtStop(model: IntervalSeries) {
@@ -29,6 +30,7 @@ public struct Ready: IntervalState {
         model.timepoints.append(origin)
         
         model.state = TimingDwell(arrivalTime: start)
+        model.startTime = start
     }
     
     public func endSeriesReset(model: IntervalSeries) throws {

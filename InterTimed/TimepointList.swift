@@ -13,11 +13,11 @@ struct TimepointList: View {
     
     @ViewBuilder
     private var totalTimeDescription: some View {
-        if let first = model.timepoints.first {
-            if model.state is StoppedWithData {
-                Text(model.timepoints.last!.temporality.arrivalTime!, format: .stopwatch(startingAt: first.temporality.departureTime!))
+        if let start = model.startTime {
+            if let end = model.endTime {
+                Text(end, format: .stopwatch(startingAt: start))
             } else {
-                Text(TimeDataSource<Date>.currentDate, format: .stopwatch(startingAt: first.temporality.departureTime!))
+                Text(TimeDataSource<Date>.currentDate, format: .stopwatch(startingAt: start))
             }
         } else {
             Text("---")
